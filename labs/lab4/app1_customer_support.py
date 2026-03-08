@@ -15,7 +15,7 @@ loader = DirectoryLoader('./knowledge', glob="./*.txt", loader_cls=TextLoader)
 docs = loader.load()
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 chunks = splitter.split_documents(docs)
-vector_db = FAISS.from_documents(chunks, HuggingFaceEmbeddings())
+vector_db = FAISS.from_documents(chunks, HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2"))
 
 # 2. Memory & LLM (Using Groq for free models)
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key="answer")
