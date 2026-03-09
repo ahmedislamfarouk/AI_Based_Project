@@ -11,3 +11,9 @@ wikipedia
 arxiv
 pydantic
 pydantic-settings
+opencv-python
+pyaudio
+pyserial
+websockets
+numpy
+librosa
