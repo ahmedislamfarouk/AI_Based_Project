@@ -1,0 +1,17 @@
+# Loads settings from the .env file so the code can see your API keys
+python-dotenv
+
+# The library used to create and run the Telegram bot
+python-telegram-bot
+
+# Connects to the Groq AI service to process and summarize text
+groq
+
+# Handles the connection to your email inbox to fetch/read emails (IMAP)
+imapclient
+
+# Converts raw, messy email data into clean text that AI can understand
+mail-parser
+
+# Used for cleaning up emails that contain HTML (web-style) formatting
+beautifulsoup4
