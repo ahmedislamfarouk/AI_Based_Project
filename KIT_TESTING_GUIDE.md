@@ -1,6 +1,6 @@
 # 📦 Kit Deployment & Testing Guide
 
-This guide provides the step-by-step instructions to run, test, and validate the **Emotion-Adaptive VR Therapy Platform** on your hardware kit.
+This guide provides the step-by-step instructions to run, test, and validate the **Multimodal Emotion Monitoring System** on your hardware kit.
 
 ---
 
@@ -74,26 +74,6 @@ To ensure the kit is working correctly, perform these four validation checks:
 - **Validation:** The `-- [LIVE RECOMMENDATION] --` JSON should reflect a high "distress" score and suggest an environmental change like `"Switch to relaxing room"`.
 
 ---
-
-## 4. Validating the VR Connection (Master Test)
-
-The system hosts a WebSocket server on **port 8765**. This is how the VR engine (Unity/Unreal) gets the emotion data.
-
-### 🔬 Using a WebSocket Tester
-If you don't have the VR scene open yet, you can use a Python script to validate the stream:
-```python
-# Save this as ws_test.py and run it
-import asyncio
-import websockets
-
-async def test_stream():
-    async with websockets.connect("ws://localhost:8765") as websocket:
-        while True:
-            data = await websocket.recv()
-            print(f"Data from Kit: {data}")
-
-asyncio.run(test_stream())
-```
 
 ---
 

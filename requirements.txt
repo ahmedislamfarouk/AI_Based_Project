@@ -14,6 +14,5 @@ pydantic-settings
 opencv-python
 pyaudio
 pyserial
-websockets
 numpy
 librosa

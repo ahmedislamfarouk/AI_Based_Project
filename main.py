@@ -1,8 +1,6 @@
 import threading
 import time
 import json
-import asyncio
-import websockets
 from modules.video.video_emotion import VideoEmotionAnalyzer
 from modules.voice.voice_emotion import VoiceEmotionAnalyzer
 from modules.biometrics.heart_rate_processor import BiometricProcessor
@@ -86,20 +84,6 @@ def ai_fusion_worker():
             print(f"[Thread] AI Fusion Error: {e}")
             time.sleep(5)
 
-# --- WebSocket Server (To communicate with VR Engine) ---
-
-async def handler(websocket, path):
-    print(f"[WebSocket] VR Engine Connected")
-    while True:
-        # Push the full system state as JSON every second
-        await websocket.send(json.dumps(system_state))
-        await asyncio.sleep(1.0)
-
-async def start_websocket_server(port=8765):
-    print(f"[WebSocket] Server starting on port {port}")
-    async with websockets.serve(handler, "localhost", port):
-        await asyncio.future()  # Run forever
-
 # --- Main Entry Point ---
 
 def main():
@@ -114,12 +98,13 @@ def main():
     for t in threads:
         t.start()
         
-    # 2. Start Async WebSocket Server in Main Thread
-    print("\n--- EMOTION-ADAPTIVE VR SYSTEM READY ---")
-    print("Use Python for sensor analysis and Unity/Unreal for the VR room.")
+    print("\n--- MULTIMODAL EMOTION MONITORING SYSTEM READY ---")
+    print("Real-time analysis is active. Press Ctrl+C to stop.")
     
     try:
-        asyncio.run(start_websocket_server())
+        # Keep the main thread alive while workers run
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\nShutting down system...")
 
