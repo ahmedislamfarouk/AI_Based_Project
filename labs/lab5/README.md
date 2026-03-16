@@ -2,9 +2,11 @@
 # Lab 5: n8n Workflow Automation (Python Implementation)
 
 ## Project Overview
+
 This project automates the process of fetching, analyzing, and reporting email communications. It mimics a complex n8n workflow but is implemented in Python for maximum control and efficiency.
 
-### How it works:
+### How it works
+
 1. **Trigger**: You send a message to a Telegram Bot.
 2. **Retrieve**: The bot reads your prompt and target email addresses.
 3. **Analyze**: It fetches the last 10 emails from those addresses via IMAP and sends them to Groq (Llama-3) for analysis.
@@ -13,6 +15,7 @@ This project automates the process of fetching, analyzing, and reporting email c
 ---
 
 ## Where does n8n fit in?
+
 This project is a Python version of an n8n workflow. In n8n, you would connect "nodes" with lines to move data. Here, we use modular Python files to act as those nodes:
 
 | n8n Node | Python File | Description |
@@ -27,6 +30,7 @@ This project is a Python version of an n8n workflow. In n8n, you would connect "
 ---
 
 ## File Breakdown
+
 * **`main.py`**: The entry point. Starts the bot loop.
 * **`telegram_handler.py`**: Handles user interaction.
 * **`email_service.py`**: Handles both reading and sending mail.
@@ -37,6 +41,7 @@ This project is a Python version of an n8n workflow. In n8n, you would connect "
 ---
 
 ## Setup
+
 1. Fill in your keys in `.env`.
 2. Run `pip install -r requirements.txt`.
 3. Run `python main.py`.
