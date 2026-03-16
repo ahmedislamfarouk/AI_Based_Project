@@ -34,7 +34,7 @@ def get_jetson_stats():
     try:
         # Check if tegrastats exists
         if subprocess.run(['which', 'tegrastats'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
-            process = subprocess.Popen(['tegrastats'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            process = subprocess.Popen(['tegrastats'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             time.sleep(1)
             process.terminate()
             stdout, _ = process.communicate()
