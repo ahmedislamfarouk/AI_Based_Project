@@ -29,7 +29,16 @@ pip install -r requirements.txt
 
 ---
 
-## 2. Running the Sensing Hub
+## 2. Hardware Diagnostic Suite
+
+If you want to test the camera, audio, or system health specifically, run:
+```bash
+python3 tests/hardware_tests/run_all_tests.py
+```
+
+---
+
+## 3. Running the Sensing Hub
 
 Start the master orchestrator to begin multimodal capture:
 ```bash
