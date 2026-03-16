@@ -1,0 +1,6 @@
+llama-cpp-python
+huggingface-hub
+sentence-transformers
+faiss-cpu
+pypdf
+numpy
