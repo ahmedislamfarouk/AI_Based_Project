@@ -12,7 +12,8 @@ def run_test(name, script_path):
         print(f"Test {name} failed or was interrupted: {e}")
 
 if __name__ == "__main__":
-    base_path = "/home/ahmed/Work/ai-based/tests/hardware_tests"
+    # Get the directory where this script is located
+    base_path = os.path.dirname(os.path.abspath(__file__))
     
     # 1. System Stats
     run_test("Jetson System Stats", os.path.join(base_path, "test_jetson.py"))
