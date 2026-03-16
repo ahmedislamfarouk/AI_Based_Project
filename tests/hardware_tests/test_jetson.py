@@ -33,7 +33,7 @@ def get_jetson_stats():
     print("\nAttempting to get GPU stats (tegrastats)...")
     try:
         # Check if tegrastats exists
-        if subprocess.run(['which', 'tegrastats'], capture_output=True).returncode == 0:
+        if subprocess.run(['which', 'tegrastats'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
             process = subprocess.Popen(['tegrastats'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             time.sleep(1)
             process.terminate()
