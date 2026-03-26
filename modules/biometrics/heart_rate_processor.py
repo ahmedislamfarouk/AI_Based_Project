@@ -11,16 +11,24 @@ class BiometricProcessor:
         self.last_eda = 100.0
 
     def _initialize_serial(self, port, baudrate):
-        try:
-            self.ser = serial.Serial(port, baudrate, timeout=1)
-            print(f"Connected to Biometric Sensor on {port}")
-        except FileNotFoundError:
-            # Try /dev/ttyACM0 for some Arduino models
+        import glob
+        # Common Linux serial port patterns
+        potential_ports = [port, '/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyUSB0', '/dev/ttyUSB1']
+        potential_ports.extend(glob.glob('/dev/ttyUSB*'))
+        potential_ports.extend(glob.glob('/dev/ttyACM*'))
+        
+        # Unique set of ports
+        potential_ports = list(dict.fromkeys(potential_ports))
+
+        for p in potential_ports:
             try:
-                self.ser = serial.Serial('/dev/ttyACM0', baudrate, timeout=1)
-                print(f"Connected to Biometric Sensor on /dev/ttyACM0")
-            except Exception:
-                print("No sensor found. Running in MOCK biometric mode.")
+                self.ser = serial.Serial(p, baudrate, timeout=1)
+                print(f"Connected to Biometric Sensor on {p}")
+                return
+            except (ConnectionError, serial.SerialException, FileNotFoundError):
+                continue
+        
+        print("No sensor found. Running in MOCK biometric mode.")
 
     def analyze_biometrics(self):
         if self.ser is None or not self.ser.is_open:
