@@ -16,3 +16,4 @@ pyaudio
 pyserial
 numpy
 librosa
+pyttsx3
