@@ -17,3 +17,4 @@ pyserial
 numpy
 librosa
 pyttsx3
+streamlit
