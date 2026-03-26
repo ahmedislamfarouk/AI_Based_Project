@@ -5,6 +5,7 @@ from modules.video.video_emotion import VideoEmotionAnalyzer
 from modules.voice.voice_emotion import VoiceEmotionAnalyzer
 from modules.biometrics.heart_rate_processor import BiometricProcessor
 from core.model.inference import FusionAgent
+from modules.output.tts_engine import TTSEngine
 
 # --- System Shared State ---
 system_state = {
@@ -58,6 +59,8 @@ def biometric_worker():
 def ai_fusion_worker():
     global system_state
     agent = FusionAgent()
+    tts = TTSEngine()
+    last_recommendation = ""
     print("[Thread] AI Fusion Engine Started")
     while True:
         try:
@@ -79,6 +82,16 @@ def ai_fusion_worker():
             
             system_state["ai_recommendation"] = recommendation
             print(f"-- [LIVE RECOMMENDATION]: {recommendation} --")
+            
+            # --- Speak Recommendation if significant ---
+            if isinstance(recommendation, dict):
+                rec_text = recommendation.get("recommendation", "")
+                distress = recommendation.get("distress", 0)
+                
+                if rec_text and rec_text != last_recommendation and distress >= 50:
+                    tts.speak(rec_text)
+                    last_recommendation = rec_text
+                    
             time.sleep(5)
         except Exception as e:
             print(f"[Thread] AI Fusion Error: {e}")
