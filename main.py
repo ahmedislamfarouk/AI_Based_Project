@@ -6,6 +6,7 @@ from modules.voice.voice_emotion import VoiceEmotionAnalyzer
 from modules.biometrics.heart_rate_processor import BiometricProcessor
 from core.model.inference import FusionAgent
 from modules.output.tts_engine import TTSEngine
+from modules.output.session_logger import SessionLogger
 
 # --- System Shared State ---
 system_state = {
@@ -60,6 +61,7 @@ def ai_fusion_worker():
     global system_state
     agent = FusionAgent()
     tts = TTSEngine()
+    logger = SessionLogger()
     last_recommendation = ""
     print("[Thread] AI Fusion Engine Started")
     while True:
@@ -82,6 +84,9 @@ def ai_fusion_worker():
             
             system_state["ai_recommendation"] = recommendation
             print(f"-- [LIVE RECOMMENDATION]: {recommendation} --")
+            
+            # --- Log the session event ---
+            logger.log_event(system_state)
             
             # --- Speak Recommendation if significant ---
             if isinstance(recommendation, dict):
