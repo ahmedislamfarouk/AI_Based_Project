@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  ai-based-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: emotion-monitor
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - SERIAL_PORT=${SERIAL_PORT:-/dev/ttyUSB0}
+      - CAMERA_ID=${CAMERA_ID:-0}
+      - AUDIO_CHANNELS=${AUDIO_CHANNELS:-1}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0  # Serial port for biometric sensors
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
