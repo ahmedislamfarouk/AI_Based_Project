@@ -27,6 +27,7 @@ services:
     #   docker-compose run --device=/dev/video0 --device=/dev/snd ai-based-system
     ports:
       - "8501:8501"  # Streamlit dashboard
+    command: streamlit run live_dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
     stdin_open: true
     tty: true
     restart: unless-stopped

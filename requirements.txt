@@ -20,3 +20,7 @@ librosa
 pyttsx3
 streamlit
 requests
+deepface
+mediapipe
+tf-keras
+gdown
