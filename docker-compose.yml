@@ -12,12 +12,19 @@ services:
       - SERIAL_PORT=${SERIAL_PORT:-/dev/ttyUSB0}
       - CAMERA_ID=${CAMERA_ID:-0}
       - AUDIO_CHANNELS=${AUDIO_CHANNELS:-1}
+      - DISPLAY=${DISPLAY:-}
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./.env:/app/.env
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0  # Serial port for biometric sensors
+      # X11 forwarding for camera display (Linux)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    # Hardware devices - COMMENT these out if running on laptop without sensors
+    # Uncomment when biometric sensor is connected on Maven Kit:
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0  # Biometric sensor
+    # For laptop camera/mic testing, run with:
+    #   docker-compose run --device=/dev/video0 --device=/dev/snd ai-based-system
     ports:
       - "8501:8501"  # Streamlit dashboard
     stdin_open: true
