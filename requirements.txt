@@ -4,6 +4,7 @@ langchain-community
 langchain-text-splitters
 langchain-huggingface
 langchain-groq
+langchain-chroma
 python-dotenv
 faiss-cpu
 sentence-transformers
@@ -18,3 +19,4 @@ numpy
 librosa
 pyttsx3
 streamlit
+requests

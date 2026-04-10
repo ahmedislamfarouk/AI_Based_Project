@@ -22,3 +22,19 @@ build/
 Thumbs.db
 .ipynb_checkpoints/
 *.log
+
+# Qwen AI Assistant
+.qwen/
+.obsidian/
+
+# Docker tar exports
+*.tar.gz
+
+# Presentation/Docs (non-code)
+*.pdf
+presentation_script.md
+minimal_slides_guide.md
+image_prompts_for_slides.md
+
+# Labs (separate course work)
+labs/

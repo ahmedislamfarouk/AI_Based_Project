@@ -58,6 +58,8 @@ def test_camera(index=0):
             break
         
         num_frames += 1
+        # Flip frame: -1 = both vertical and horizontal (upside down fix)
+        frame = cv2.flip(frame, -1)
         cv2.imshow('Jetson Camera Test', frame)
         
         # Exit on 'q' or after 10 seconds automatically

@@ -12,6 +12,8 @@ class VideoEmotionAnalyzer:
         if not ret:
             return "No Camera Found"
 
+        # Flip frame: 0 = vertical, 1 = horizontal, -1 = both
+        frame = cv2.flip(frame, -1)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
 
