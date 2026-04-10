@@ -197,8 +197,8 @@ if st.session_state.running:
             fatigue_info = f"⚠️ {current_state} detected!"
         fatigue_placeholder.info(fatigue_info)
         
-        # Therapist Logic (every 10 seconds)
-        if time.time() - last_response_time > 10:
+        # Therapist Logic (every 5 seconds)
+        if time.time() - last_response_time > 5:
             voice_input = "Speaking" if speaking else "Silent"
             response = ""
             

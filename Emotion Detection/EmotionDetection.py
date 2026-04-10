@@ -20,6 +20,12 @@ Can run standalone or be imported by data collection/testing scripts.
 
 import cv2
 import mediapipe as mp
+# Fix for MediaPipe 0.10+ compatibility
+try:
+    from mediapipe.solutions import face_mesh as mp_face_mesh_module
+    mp_face_mesh = mp_face_mesh_module
+except ImportError:
+    mp_face_mesh = mp.solutions.face_mesh
 from deepface import DeepFace
 import numpy as np
 from collections import deque, Counter, defaultdict

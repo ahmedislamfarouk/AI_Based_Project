@@ -1,163 +1,115 @@
-# Emotion-Adaptive VR Therapy Platform
+# 🧠 AI Multimodal Emotion Monitor & Therapist
 
-A multimodal emotion monitoring system that analyzes video, voice, and biometric data to provide real-time intervention recommendations using AI fusion and RAG.
+An AI-powered real-time emotion monitoring and therapy system that uses **DeepFace**, **MediaPipe**, and **LLMs** to analyze facial expressions, voice arousal, and biometric data. It features a live Streamlit dashboard that acts as an interactive AI therapist.
 
-## Features
+---
 
-- **Multimodal Emotion Detection**: Video facial expressions, voice arousal, biometric signals
-- **AI Fusion Agent**: LLM-powered distress level assessment (0-100 scale)
-- **RAG Knowledge Base**: Vector database for context-aware recommendations
-- **TTS Output**: Voice alerts for high distress situations
-- **Session Logging**: Persistent event logging for analysis
-- **Hardware Integration**: Camera, microphone, MAX30100 heart rate sensor, EDA
+## 🚀 Quick Start (Laptop / PC)
 
-## Quick Start with Docker
-
-### Prerequisites
-- Docker and Docker Compose installed
-- GROQ_API_KEY (get from https://console.groq.com/)
-- Hardware sensors connected (optional - system runs in mock mode without them)
-
-### Setup
-
-1. **Configure Environment Variables**:
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your API keys
-   ```
-
-2. **Build and Run**:
-   ```bash
-   docker-compose up --build
-   ```
-
-3. **Stop the System**:
-   ```bash
-   docker-compose down
-   ```
-
-### Running on Maven Kit
-
-To deploy on your Maven Kit system:
+### 1. Run with Docker (Recommended)
+The easiest way to run the system is via Docker. This includes all dependencies (DeepFace, MediaPipe, LLM clients).
 
 ```bash
-# Build the Docker image
-docker-compose build
-
-# Save the image to a tar file
-docker save emotion-monitor:latest | gzip > emotion-monitor.tar.gz
-
-# Transfer to Maven Kit
-scp emotion-monitor.tar.gz user@maven-kit:/path/to/destination
-
-# On Maven Kit, load the image
-docker load < emotion-monitor.tar.gz
-
-# Run
+# Build and start the Streamlit dashboard
 docker-compose up -d
+
+# Open the dashboard in your browser
+http://localhost:8501
 ```
 
-## Local Development (Without Docker)
+**Note:** If you encounter network errors, run in host mode:
+```bash
+docker run -d --name emotion-monitor --network host \
+  --device=/dev/video0:/dev/video0 \
+  --device=/dev/snd:/dev/snd \
+  ai-based-ai-based-system:latest \
+  streamlit run live_dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+```
 
-### Install Dependencies
+### 2. Run Locally (Python)
+If you prefer not to use Docker:
+
 ```bash
 pip install -r requirements.txt
+streamlit run live_dashboard.py
 ```
 
-### Configure
+---
+
+## 📦 Maven Kit Deployment (Offline / Slow Wi-Fi)
+
+Since the AI models (DeepFace, MediaPipe) are large (~2GB), it is highly recommended to build the Docker image on a fast machine and transfer it to the Maven Kit via USB.
+
+### Step 1: Build and Export (On Laptop)
 ```bash
-cp .env.example .env
-# Edit .env with your API keys and hardware settings
-```
+# 1. Build the image
+docker-compose build
 
-### Run
+# 2. Export to a compressed tar file
+docker save ai-based-ai-based-system:latest | gzip > emotion-monitor.tar.gz
+```
+*This creates a file `emotion-monitor.tar.gz` (~4-5GB).*
+
+### Step 2: Transfer to Maven Kit
+Copy `emotion-monitor.tar.gz` to the Maven Kit via USB drive or SCP.
+
+### Step 3: Import and Run (On Maven Kit)
 ```bash
-python main.py
+# 1. Load the image
+docker load < emotion-monitor.tar.gz
+
+# 2. Run the system (with hardware passthrough if sensors are connected)
+docker run -d --name emotion-monitor \
+  --network host \
+  --device=/dev/video0:/dev/video0 \
+  --device=/dev/snd:/dev/snd \
+  --device=/dev/ttyUSB0:/dev/ttyUSB0 \
+  ai-based-ai-based-system:latest \
+  streamlit run live_dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+
+# 3. Access the dashboard
+# On the Kit's display: http://localhost:8501
+# Or from another PC: http://<KIT_IP_ADDRESS>:8501
 ```
 
-### Run Dashboard (Optional)
+---
+
+##  Features
+
+- **️ Real-Time Emotion Detection:** Uses DeepFace and MediaPipe to detect 7 emotions (Happy, Sad, Angry, Fear, Surprise, Disgust, Neutral) plus fatigue states (Drowsiness, Yawning, Head Nodding).
+- **🎤 Voice Analysis:** Monitors microphone input to detect speaking patterns and arousal levels.
+- **🤖 AI Therapist:** A built-in LLM agent (Groq/Local) analyzes your emotional state and provides real-time, empathetic text recommendations.
+- **📊 Live Dashboard:** A Streamlit-based UI showing camera feed, emotion timeline, and therapist chat.
+- **📦 Hardware Ready:** Configured for Jetson/Raspberry Pi with support for USB cameras, microphones, and serial biometric sensors.
+
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file in the root directory:
+
 ```bash
-streamlit run dashboard.py
+GROQ_API_KEY=your_groq_api_key_here
+NEWS_API_KEY=your_news_api_key_here
 ```
 
-## Architecture
+- **`GROQ_API_KEY`**: Required for the LLM therapist to generate smart recommendations.
+- **`NEWS_API_KEY`**: Optional, used by the RAG system.
+- If no API key is provided, the system runs in "Mock Mode" with pre-written therapist responses.
 
-```
-┌─────────────┐  ┌──────────────┐  ┌───────────────┐
-│   Video     │  │    Voice     │  │  Biometrics   │
-│  Emotion    │  │   Emotion    │  │ Heart Rate    │
-│  Analyzer   │  │   Analyzer   │  │ & EDA         │
-└──────┬──────┘  └──────┬───────┘  └───────┬───────┘
-       │                │                   │
-       └────────────────┼───────────────────┘
-                        │
-                 ┌──────▼──────┐
-                 │   Fusion    │
-                 │   Agent     │
-                 │  (LLM)      │
-                 └──────┬──────┘
-                        │
-           ┌────────────┼────────────┐
-           │            │            │
-      ┌────▼───┐  ┌─────▼────┐  ┌───▼────┐
-      │  TTS   │  │ Session  │  │  RAG   │
-      │ Engine │  │ Logger   │  │ DB     │
-      └────────┘  └──────────┘  └────────┘
-```
+---
 
-## Configuration
+## 🛠️ Project Structure
 
-See `.env.example` for available options:
+- `live_dashboard.py`: Main Streamlit application (AI Therapist UI).
+- `main.py`: Background orchestrator (Video, Voice, Biometrics, Fusion).
+- `core/model/inference.py`: LLM Fusion Agent.
+- `core/rag/`: RAG system for knowledge retrieval.
+- `Emotion Detection/`: DeepFace-based emotion analysis engine.
+- `modules/`: Hardware interfaces (Video, Voice, Biometrics, Output).
 
-- `GROQ_API_KEY`: Groq API key for LLM inference
-- `NEWS_API_KEY`: For RAG knowledge base (optional)
-- `SERIAL_PORT`: Serial port for biometric sensor
-- `CAMERA_ID`: Camera device ID
-- `AUDIO_CHANNELS`: Number of audio channels
+---
 
-## RAG System
+## 📜 License
 
-The RAG (Retrieval-Augmented Generation) system uses ChromaDB to index and retrieve relevant mental health articles. To populate the knowledge base:
-
-```python
-from core.rag import KnowledgeRetriever
-
-retriever = KnowledgeRetriever()
-retriever.fetch_and_index_news(topic="mental health", max_articles=10)
-context = retriever.retrieve_context("anxiety treatment")
-```
-
-## Project Structure
-
-```
-├── main.py                 # Main entry point
-├── dashboard.py            # Streamlit dashboard
-├── core/
-│   ├── model/             # AI fusion agent
-│   └── rag/               # RAG system (vector DB + retriever)
-├── modules/
-│   ├── video/             # Video emotion analysis
-│   ├── voice/             # Voice emotion analysis
-│   ├── biometrics/        # Biometric signal processing
-│   └── output/            # TTS, logging, speakers
-├── configs/               # Configuration files
-├── data/                  # Data storage
-│   ├── raw/               # Raw sensor data
-│   └── processed/         # Processed data & vector DB
-└── requirements.txt       # Python dependencies
-```
-
-## Troubleshooting
-
-### No GROQ_API_KEY
-System runs in mock mode with default recommendations.
-
-### Hardware Not Found
-Sensors are optional. System will log errors but continue running.
-
-### Port Conflicts
-Change Streamlit port in docker-compose.yml if 8501 is in use.
-
-## License
-
-Proprietary - All rights reserved
+Proprietary - All rights reserved.
