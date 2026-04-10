@@ -1,0 +1,8 @@
+timestamp,video_emotion,voice_arousal,biometric_data,distress_level,recommendation
+2026-04-10T11:05:32.695080,Starting...,Starting...,Starting...,30,No change (Mock Mode)
+2026-04-10T11:05:37.695270,No Camera Found,Starting...,"HR: 67.3, EDA: 101.1",30,No change (Mock Mode)
+2026-04-10T11:05:42.695509,No Camera Found,Starting...,"HR: 67.6, EDA: 116.5",30,No change (Mock Mode)
+2026-04-10T11:05:47.695773,No Camera Found,Starting...,"HR: 70.1, EDA: 130.5",30,No change (Mock Mode)
+2026-04-10T11:05:52.696033,No Camera Found,Starting...,"HR: 69.7, EDA: 132.6",30,No change (Mock Mode)
+2026-04-10T11:05:57.696339,No Camera Found,Starting...,"HR: 72.0, EDA: 134.5",30,No change (Mock Mode)
+2026-04-10T11:06:02.696656,No Camera Found,Starting...,"HR: 70.0, EDA: 125.5",30,No change (Mock Mode)
