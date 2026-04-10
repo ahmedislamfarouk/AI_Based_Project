@@ -21,6 +21,6 @@ pyttsx3
 streamlit
 requests
 deepface
-mediapipe<0.10
+mediapipe
 tf-keras
 gdown
