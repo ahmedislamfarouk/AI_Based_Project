@@ -7,16 +7,34 @@ class VoiceEmotionAnalyzer:
     def __init__(self, rate=16000, chunk=1024):
         self.rate = rate
         self.chunk = chunk
-        self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(format=pyaudio.paInt16,
-                                  channels=1,
-                                  rate=self.rate,
-                                  input=True,
-                                  frames_per_buffer=self.chunk)
-        self.rms_history = deque(maxlen=20) # ~2 seconds of audio history
-        self.last_arousal = "Low"
+        self.p = None
+        self.stream = None
+        self.audio_available = False
+        
+        try:
+            self.p = pyaudio.PyAudio()
+            self.stream = self.p.open(format=pyaudio.paInt16,
+                                      channels=1,
+                                      rate=self.rate,
+                                      input=True,
+                                      frames_per_buffer=self.chunk)
+            self.audio_available = True
+            self.rms_history = deque(maxlen=20)
+            self.last_arousal = "Low"
+            print("[Voice] Audio device initialized successfully")
+        except Exception as e:
+            print(f"[Voice] Audio device not available: {e}")
+            print("[Voice] Running in MOCK mode - simulating voice emotion data")
+            self.rms_history = deque(maxlen=20)
+            self.last_arousal = "Low"
+            self.frame_count = 0
 
     def analyze_audio(self):
+        if not self.audio_available:
+            self.frame_count += 1
+            mock_patterns = ["Low/Stable", "Low/Stable", "Moderate (Speaking)", "Low/Stable", "Low/Stable"]
+            return mock_patterns[self.frame_count % len(mock_patterns)]
+        
         try:
             data = self.stream.read(self.chunk, exception_on_overflow=False)
             audio_array = np.frombuffer(data, dtype=np.int16)
@@ -38,9 +56,17 @@ class VoiceEmotionAnalyzer:
             return f"Audio Error: {e}"
 
     def close(self):
-        self.stream.stop_stream()
-        self.stream.close()
-        self.p.terminate()
+        if self.stream:
+            try:
+                self.stream.stop_stream()
+                self.stream.close()
+            except:
+                pass
+        if self.p:
+            try:
+                self.p.terminate()
+            except:
+                pass
 
 if __name__ == "__main__":
     v_analyzer = VoiceEmotionAnalyzer()
