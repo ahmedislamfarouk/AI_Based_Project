@@ -17,15 +17,15 @@ class FusionAgent:
             self.llm = ChatGroq(api_key=self.api_key, model_name=model)
             
         self.system_prompt = """
-        You are the 'Distress Monitor' for a Multimodal Emotion Monitoring System. 
+        You are the 'Distress Monitor' for a Multimodal Emotion Monitoring System.
         You will receive multimodal inputs from:
         1. Voice Arousal Level
         2. Biometric Signals (Heart Rate, EDA)
         3. Video Emotion/State
-        
+
         Your task:
         Determine the user's current 'Distress Level' (0-100) and provide a recommendation for an intervention or alert (e.g., 'Suggest deep breathing', 'Alert caregiver', 'Check connectivity', 'No action needed').
-        Provide your output as a short one-liner in JSON format: {"distress": level, "recommendation": "text"}.
+        Provide your output as a short one-liner in JSON format: {{"distress": level, "recommendation": "text"}}.
         """
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", self.system_prompt),
