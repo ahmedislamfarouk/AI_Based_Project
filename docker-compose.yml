@@ -25,8 +25,12 @@ services:
     #   - /dev/ttyUSB0:/dev/ttyUSB0  # Biometric sensor
     # For laptop camera/mic testing, run with:
     #   docker-compose run --device=/dev/video0 --device=/dev/snd ai-based-system
-    ports:
-      - "8501:8501"  # Streamlit dashboard
+    # ports:
+    #   - "8501:8501"  # Streamlit dashboard
+    network_mode: host
+    devices:
+      - /dev/video0:/dev/video0  # Camera
+      - /dev/snd:/dev/snd  # Audio
     command: streamlit run live_dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
     stdin_open: true
     tty: true
