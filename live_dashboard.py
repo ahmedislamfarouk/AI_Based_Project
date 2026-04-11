@@ -204,145 +204,151 @@ if st.session_state.running:
     # Track last displayed message to avoid re-rendering
     last_displayed_message = None
 
-    while st.session_state.running:
-        ret, frame = cap.read()
-        if not ret:
-            break
+    try:
+        while st.session_state.running:
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        frame = cv2.flip(frame, 1)
-        speaking = not voice_queue.empty()
-        if speaking:
-            _ = voice_queue.get()
+            frame = cv2.flip(frame, 1)
+            speaking = not voice_queue.empty()
+            if speaking:
+                _ = voice_queue.get()
 
-        # Use REAL model if available
-        if REAL_MODEL_AVAILABLE and face_mesh:
-            try:
-                frame, states = analyze_faces_and_draw(frame, face_mesh)
-                current_state = states[0] if states else "Neutral"
-            except Exception as e:
+            # Use REAL model if available
+            if REAL_MODEL_AVAILABLE and face_mesh:
+                try:
+                    frame, states = analyze_faces_and_draw(frame, face_mesh)
+                    current_state = states[0] if states else "Neutral"
+                except Exception as e:
+                    current_state = "Neutral"
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    faces = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml').detectMultiScale(gray, 1.3, 5)
+                    for (x, y, w, h) in faces:
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 255), 2)
+            else:
                 current_state = "Neutral"
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 faces = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml').detectMultiScale(gray, 1.3, 5)
                 for (x, y, w, h) in faces:
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 255), 2)
-        else:
-            current_state = "Neutral"
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml').detectMultiScale(gray, 1.3, 5)
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 255), 2)
-                cv2.putText(frame, "Neutral", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                    cv2.putText(frame, "Neutral", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
 
-        # Overlay stats on frame
-        elapsed = time.time() - start_time
-        fps = frame_count / max(0.1, elapsed)
-        voice_text = "🎤 Speaking" if speaking else "🎤 Listening"
-        cv2.putText(frame, f"AI Therapist | FPS: {fps:.1f} | {voice_text}", (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+            # Overlay stats on frame
+            elapsed = time.time() - start_time
+            fps = frame_count / max(0.1, elapsed)
+            voice_text = "🎤 Speaking" if speaking else "🎤 Listening"
+            cv2.putText(frame, f"AI Therapist | FPS: {fps:.1f} | {voice_text}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
-        # Show live video feed (centered)
-        frame_placeholder.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
+            # Show live video feed (centered)
+            frame_placeholder.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
 
-        # Status bar below video
-        emoji_map = {"Happy": "😊", "Sad": "😢", "Angry": "😠", "Fear": "😨", "Surprise": "😲",
-                     "Neutral": "😐", "Drowsiness": "😴", "Yawning": "😮", "Head Nodding": "💤"}
-        emoji = emoji_map.get(current_state, "👤")
-        mic_status = "🟢 Speaking" if speaking else "🔴 Listening"
-        status_placeholder.markdown(f"""
-            <div class="status-bar">
-                <div class="status-item">
-                    🎭 Detected Emotion
-                    <div class="value">{emoji} {current_state}</div>
-                </div>
-                <div class="status-item">
-                    🎤 Microphone
-                    <div class="value">{mic_status}</div>
-                </div>
-                <div class="status-item">
-                    ⏱️ Session Time
-                    <div class="value">{elapsed:.0f}s</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-        # Therapist Logic (every 10 seconds)
-        if frame_count == 0 or time.time() - last_response_time > 10:
-            voice_input = "Speaking" if speaking else "Silent"
-            response = ""
-
-            if HAS_LLM and fusion:
-                try:
-                    rec = fusion.fuse_inputs(voice_input, "N/A", current_state)
-                    if isinstance(rec, str):
-                        start_idx = rec.find("{")
-                        if start_idx >= 0:
-                            end_idx = rec.find("}") + 1
-                            rec = json.loads(rec[start_idx:end_idx])
-                    if isinstance(rec, dict):
-                        raw_rec = rec.get("recommendation", "")
-                        distress = rec.get("distress", 50)
-                        # Clean up the response — remove robotic phrases
-                        raw_rec = raw_rec.replace("No action needed", "").replace("no action needed", "").strip()
-                        # Make response more conversational
-                        if raw_rec:
-                            if distress > 70:
-                                response = f"I can see you're going through something right now. {raw_rec} Take a deep breath with me."
-                            elif distress > 40:
-                                response = f"{raw_rec} Try to relax your shoulders and take a slow breath."
-                            else:
-                                response = f"{raw_rec} I'm right here with you."
-                except Exception as e:
-                    print(f"LLM call failed: {e}")
-                    pass
-
-            # If LLM didn't give us a good response, use the caring fallback
-            if not response:
-                response = THERAPIST_RESPONSES.get(current_state, "I'm here with you. 💙 How are you feeling?")
-
-            # Only update if the message actually changed
-            new_message = f"**[{current_state}]** {response}"
-            if new_message != last_displayed_message:
-                last_displayed_message = new_message
-                st.session_state.chat_history = [{"role": "therapist", "message": new_message}]
-                last_response_time = time.time()
-
-        # Render the therapist response using a SINGLE placeholder (replaces previous content)
-        if st.session_state.chat_history:
-            msg = st.session_state.chat_history[-1]
-            raw = msg['message']
-            if raw.startswith("**[") and "]**" in raw:
-                bracket_end = raw.index("]**") + 3
-                emotion_tag = raw[3:raw.index("]**")]
-                response_text = raw[bracket_end:].strip()
-                emoji_map = {"Happy": "😊", "Sad": "😢", "Angry": "😠", "Fear": "😨", "Surprise": "😲",
-                             "Neutral": "😐", "Drowsiness": "😴", "Yawning": "😮", "Head Nodding": "💤"}
-                emoji = emoji_map.get(emotion_tag, "🎭")
-                chat_html = f"""
-                    <div style="background: linear-gradient(135deg, #0a2a4a 0%, #0d3b66 100%); padding: 50px 55px; border-radius: 24px; margin: 25px 0; border-left: 10px solid #00ff88; color: #ffffff; text-align: center; box-shadow: 0 12px 48px rgba(0, 255, 136, 0.2);">
-                        <div style="color: #00ff88; font-size: 36px; font-weight: bold; margin-bottom: 20px; letter-spacing: 3px;">🧠 AI THERAPIST</div>
-                        <span style="display: inline-block; background: rgba(255, 204, 0, 0.15); padding: 10px 30px; border-radius: 40px; font-size: 38px; margin-bottom: 20px; color: #ffcc00; border: 2px solid rgba(255, 204, 0, 0.3);">{emoji} {emotion_tag}</span>
-                        <div style="font-size: 52px; font-weight: bold; margin-top: 15px; line-height: 1.4;">{response_text}</div>
+            # Status bar below video
+            emoji_map = {"Happy": "😊", "Sad": "😢", "Angry": "😠", "Fear": "😨", "Surprise": "😲",
+                         "Neutral": "😐", "Drowsiness": "😴", "Yawning": "😮", "Head Nodding": "💤"}
+            emoji = emoji_map.get(current_state, "👤")
+            mic_status = "🟢 Speaking" if speaking else "🔴 Listening"
+            status_placeholder.markdown(f"""
+                <div class="status-bar">
+                    <div class="status-item">
+                        🎭 Detected Emotion
+                        <div class="value">{emoji} {current_state}</div>
                     </div>
-                """
-            else:
-                chat_html = f"""
-                    <div style="background: linear-gradient(135deg, #0a2a4a 0%, #0d3b66 100%); padding: 50px 55px; border-radius: 24px; margin: 25px 0; border-left: 10px solid #00ff88; color: #ffffff; text-align: center; box-shadow: 0 12px 48px rgba(0, 255, 136, 0.2);">
-                        <div style="color: #00ff88; font-size: 36px; font-weight: bold; margin-bottom: 20px; letter-spacing: 3px;">🧠 AI THERAPIST</div>
-                        <div style="font-size: 52px; font-weight: bold; margin-top: 15px; line-height: 1.4;">{raw}</div>
+                    <div class="status-item">
+                        🎤 Microphone
+                        <div class="value">{mic_status}</div>
                     </div>
-                """
-            therapist_placeholder.markdown(chat_html, unsafe_allow_html=True)
+                    <div class="status-item">
+                        ⏱️ Session Time
+                        <div class="value">{elapsed:.0f}s</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
-        # Listening indicator at bottom
-        listen_placeholder.markdown(f"""
-            <div class="listening-indicator">
-                {'🎤 <b>LISTENING...</b> - Speak naturally, the AI is analyzing your emotions' if speaking else '🔇 <b>Waiting for you to speak...</b> - I am monitoring your emotions in real-time'}
-            </div>
-        """, unsafe_allow_html=True)
+            # Therapist Logic (every 10 seconds)
+            if frame_count == 0 or time.time() - last_response_time > 10:
+                voice_input = "Speaking" if speaking else "Silent"
+                response = ""
 
-        frame_count += 1
-        time.sleep(0.05)
+                if HAS_LLM and fusion:
+                    try:
+                        rec = fusion.fuse_inputs(voice_input, "N/A", current_state)
+                        if isinstance(rec, str):
+                            start_idx = rec.find("{")
+                            if start_idx >= 0:
+                                end_idx = rec.find("}") + 1
+                                rec = json.loads(rec[start_idx:end_idx])
+                        if isinstance(rec, dict):
+                            raw_rec = rec.get("recommendation", "")
+                            distress = rec.get("distress", 50)
+                            # Clean up the response — remove robotic phrases
+                            raw_rec = raw_rec.replace("No action needed", "").replace("no action needed", "").strip()
+                            # Make response more conversational
+                            if raw_rec:
+                                if distress > 70:
+                                    response = f"I can see you're going through something right now. {raw_rec} Take a deep breath with me."
+                                elif distress > 40:
+                                    response = f"{raw_rec} Try to relax your shoulders and take a slow breath."
+                                else:
+                                    response = f"{raw_rec} I'm right here with you."
+                    except Exception as e:
+                        print(f"LLM call failed: {e}")
+                        pass
 
-    voice_running[0] = False
-    cap.release()
-    st.success("✅ Session ended.")
+                # If LLM didn't give us a good response, use the caring fallback
+                if not response:
+                    response = THERAPIST_RESPONSES.get(current_state, "I'm here with you. 💙 How are you feeling?")
+
+                # Only update if the message actually changed
+                new_message = f"**[{current_state}]** {response}"
+                if new_message != last_displayed_message:
+                    last_displayed_message = new_message
+                    st.session_state.chat_history = [{"role": "therapist", "message": new_message}]
+                    last_response_time = time.time()
+
+            # Render the therapist response using a SINGLE placeholder (replaces previous content)
+            if st.session_state.chat_history:
+                msg = st.session_state.chat_history[-1]
+                raw = msg['message']
+                if raw.startswith("**[") and "]**" in raw:
+                    bracket_end = raw.index("]**") + 3
+                    emotion_tag = raw[3:raw.index("]**")]
+                    response_text = raw[bracket_end:].strip()
+                    emoji_map2 = {"Happy": "😊", "Sad": "😢", "Angry": "😠", "Fear": "😨", "Surprise": "😲",
+                                 "Neutral": "😐", "Drowsiness": "😴", "Yawning": "😮", "Head Nodding": "💤"}
+                    emoji = emoji_map2.get(emotion_tag, "🎭")
+                    chat_html = f"""
+                        <div style="background: linear-gradient(135deg, #0a2a4a 0%, #0d3b66 100%); padding: 50px 55px; border-radius: 24px; margin: 25px 0; border-left: 10px solid #00ff88; color: #ffffff; text-align: center; box-shadow: 0 12px 48px rgba(0, 255, 136, 0.2);">
+                            <div style="color: #00ff88; font-size: 36px; font-weight: bold; margin-bottom: 20px; letter-spacing: 3px;">🧠 AI THERAPIST</div>
+                            <span style="display: inline-block; background: rgba(255, 204, 0, 0.15); padding: 10px 30px; border-radius: 40px; font-size: 38px; margin-bottom: 20px; color: #ffcc00; border: 2px solid rgba(255, 204, 0, 0.3);">{emoji} {emotion_tag}</span>
+                            <div style="font-size: 52px; font-weight: bold; margin-top: 15px; line-height: 1.4;">{response_text}</div>
+                        </div>
+                    """
+                else:
+                    chat_html = f"""
+                        <div style="background: linear-gradient(135deg, #0a2a4a 0%, #0d3b66 100%); padding: 50px 55px; border-radius: 24px; margin: 25px 0; border-left: 10px solid #00ff88; color: #ffffff; text-align: center; box-shadow: 0 12px 48px rgba(0, 255, 136, 0.2);">
+                            <div style="color: #00ff88; font-size: 36px; font-weight: bold; margin-bottom: 20px; letter-spacing: 3px;">🧠 AI THERAPIST</div>
+                            <div style="font-size: 52px; font-weight: bold; margin-top: 15px; line-height: 1.4;">{raw}</div>
+                        </div>
+                    """
+                therapist_placeholder.markdown(chat_html, unsafe_allow_html=True)
+
+            # Listening indicator at bottom
+            listen_placeholder.markdown(f"""
+                <div class="listening-indicator">
+                    {'🎤 <b>LISTENING...</b> - Speak naturally, the AI is analyzing your emotions' if speaking else '🔇 <b>Waiting for you to speak...</b> - I am monitoring your emotions in real-time'}
+                </div>
+            """, unsafe_allow_html=True)
+
+            frame_count += 1
+            time.sleep(0.05)
+
+    except (KeyboardInterrupt, SystemExit, GeneratorExit):
+        pass
+    finally:
+        voice_running[0] = False
+        if cap.isOpened():
+            cap.release()
+        cv2.destroyAllWindows()
+        print("[Dashboard] Camera released, session ended.")
