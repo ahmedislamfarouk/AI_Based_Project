@@ -1,7 +1,5 @@
-LLM/books/*.pdf
 LLM/model/
-LLM/faiss_index/index.faiss
-LLM/faiss_index/chunks.pkl
+
 __pycache__/
 *.pyc
 *.pyo
@@ -31,7 +29,6 @@ Thumbs.db
 *.tar.gz
 
 # Presentation/Docs (non-code)
-*.pdf
 presentation_script.md
 minimal_slides_guide.md
 image_prompts_for_slides.md
