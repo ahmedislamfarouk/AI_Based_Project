@@ -33,6 +33,10 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p data/processed data/raw logs LLM/books LLM/faiss_index LLM/model
 
+# Copy and set up entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -40,5 +44,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Expose ports (Streamlit dashboard if used)
 EXPOSE 8501
 
+# Use entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 # Default command
-CMD ["python", "main.py"]
+CMD ["streamlit", "run", "live_dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0", "--server.headless", "true"]

@@ -1,5 +1,8 @@
+LLM/books/*.pdf
 LLM/model/
-
+LLM/model/*.gguf
+LLM/faiss_index/index.faiss
+LLM/faiss_index/chunks.pkl
 __pycache__/
 *.pyc
 *.pyo

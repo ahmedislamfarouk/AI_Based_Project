@@ -8,6 +8,8 @@ langchain-chroma
 python-dotenv
 faiss-cpu
 sentence-transformers
+huggingface_hub
+llama-cpp-python
 wikipedia
 arxiv
 pydantic

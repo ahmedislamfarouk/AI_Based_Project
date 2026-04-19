@@ -17,6 +17,8 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./.env:/app/.env
+      - ./LLM/model:/app/LLM/model
+      - ./LLM/faiss_index:/app/LLM/faiss_index
       # X11 forwarding for camera display (Linux)
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
     # Hardware devices - COMMENT these out if running on laptop without sensors
