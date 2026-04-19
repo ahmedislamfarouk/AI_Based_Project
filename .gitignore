@@ -38,3 +38,6 @@ image_prompts_for_slides.md
 
 # Labs (separate course work)
 labs/
+!labs/
+!labs/lab8/
+!labs/lab8/intelligent_data_query_llama.py
