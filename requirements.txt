@@ -26,3 +26,9 @@ deepface
 mediapipe==0.10.9
 tf-keras
 gdown
+fastapi
+uvicorn[standard]
+python-multipart
+websockets
+aiofiles
+pandas
