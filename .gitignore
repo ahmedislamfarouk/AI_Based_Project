@@ -27,6 +27,7 @@ Thumbs.db
 # Qwen AI Assistant
 .qwen/
 .obsidian/
+.opencode/
 
 # Docker tar exports
 *.tar.gz

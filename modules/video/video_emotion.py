@@ -2,18 +2,29 @@ import cv2
 import time
 
 class VideoEmotionAnalyzer:
-    def __init__(self):
-        self.cap = cv2.VideoCapture(0)
+    def __init__(self, cap=None):
+        self.own_cap = cap is None
+        self.cap = cap if cap is not None else cv2.VideoCapture(0)
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.last_emotion = "Neutral"
 
     def analyze_frame(self):
+        if self.cap is None or not self.cap.isOpened():
+            return "No Camera Found"
         ret, frame = self.cap.read()
         if not ret:
             return "No Camera Found"
 
         # Flip frame: 0 = vertical, 1 = horizontal, -1 = both
         frame = cv2.flip(frame, -1)
+        return self._process_frame(frame)
+
+    def analyze_frame_given(self, frame):
+        if frame is None:
+            return "No Frame"
+        return self._process_frame(frame)
+
+    def _process_frame(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
 
@@ -31,7 +42,8 @@ class VideoEmotionAnalyzer:
         return self.last_emotion
 
     def close(self):
-        self.cap.release()
+        if self.own_cap and self.cap:
+            self.cap.release()
 
 if __name__ == "__main__":
     v_analyzer = VideoEmotionAnalyzer()

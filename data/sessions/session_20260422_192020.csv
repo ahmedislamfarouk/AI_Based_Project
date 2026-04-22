@@ -1,0 +1,16 @@
+timestamp,video_emotion,voice_arousal,biometric_data,distress_level,recommendation
+2026-04-22T19:20:22.154320,Starting...,Moderate (Speaking),"HR: 68.7, EDA: 104.1",20,I'm here with you.
+2026-04-22T19:20:27.820646,Calm/Attentive,Moderate (Speaking),"HR: 68.3, EDA: 100.0",20,You look calm and attentive. That's great.
+2026-04-22T19:20:33.425337,Calm/Attentive,Low/Stable,"HR: 70.8, EDA: 126.1",10,You look calm and attentive. That's great.
+2026-04-22T19:20:38.981917,Calm/Attentive,Low/Stable,"HR: 69.8, EDA: 119.1",10,You look calm and attentive. That's great.
+2026-04-22T19:20:44.576223,Calm/Attentive,Low/Stable,"HR: 68.6, EDA: 118.5",20,You look calm and attentive. That's great.
+2026-04-22T19:20:50.081322,Calm/Attentive,Low/Stable,"HR: 66.6, EDA: 112.8",20,You look calm and attentive. That's great.
+2026-04-22T19:20:56.378850,Calm/Attentive,Low/Stable,"HR: 70.0, EDA: 123.1",20,You look calm and attentive. That's great.
+2026-04-22T19:21:02.062361,Calm/Attentive,Moderate (Speaking),"HR: 70.8, EDA: 117.6",10,You look calm and attentive. That's great.
+2026-04-22T19:21:07.491484,Calm/Attentive,Low/Stable,"HR: 69.3, EDA: 132.0",20,You look calm and attentive. That's great.
+2026-04-22T19:21:13.100944,Calm/Attentive,Low/Stable,"HR: 70.9, EDA: 123.7",20,You look calm and attentive. That's great.
+2026-04-22T19:21:18.764027,Calm/Attentive,Low/Stable,"HR: 64.6, EDA: 113.1",20,You look calm and attentive. That's great.
+2026-04-22T19:21:24.262962,No Face Detected,Low/Stable,"HR: 64.7, EDA: 95.7",20,Check connectivity
+2026-04-22T19:21:29.873812,No Face Detected,Low/Stable,"HR: 63.8, EDA: 84.9",20,Check connectivity
+2026-04-22T19:21:35.560519,Calm/Attentive,Moderate (Speaking),"HR: 65.4, EDA: 104.2",20,You look calm and attentive. That's great.
+2026-04-22T19:21:41.493024,Idle,Idle,Idle,20,You look calm and attentive. That's great.

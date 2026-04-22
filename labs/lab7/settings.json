@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python -c \"import streamlit, groq, pdfplumber, PIL; print\\('All packages OK'\\)\")",
+      "Bash(where python *)",
+      "Bash(C:/Python310/python.exe -m pip install streamlit groq pdfplumber Pillow -q)",
+      "Bash(C:/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/python.exe -m pip install streamlit groq pdfplumber Pillow -q)",
+      "Bash(C:/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/python.exe -c \"import streamlit, groq, pdfplumber, PIL; print\\('All packages OK'\\)\")",
+      "Bash(c:/python310/python.exe -m pip install pdfplumber groq Pillow streamlit)",
+      "Bash(c:/python310/python.exe -c \"import pdfplumber; print\\('ok'\\)\")",
+      "Bash(C:/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/python.exe -m streamlit run main.py)",
+      "Bash(C:/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/Scripts/streamlit.exe run *)",
+      "Read(//c/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/Scripts//**)",
+      "Bash(\"/c/Users/Alaaeddin/AppData/Local/Programs/Python/Python311/Scripts/streamlit.exe\" run *)",
+      "Bash(c:/python310/python.exe -m pip install pdfplumber groq Pillow streamlit --user)",
+      "Bash(c:/python310/python.exe -c \"import streamlit, groq, pdfplumber, PIL; print\\('All OK'\\)\")"
+    ]
+  }
+}
