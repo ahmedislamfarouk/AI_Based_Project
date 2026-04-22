@@ -32,6 +32,7 @@ from typing import Any
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 
 DB_PATH = Path(__file__).with_name("sample_store.db")
@@ -152,7 +153,7 @@ def get_schema_description(conn: sqlite3.Connection) -> str:
 def build_llm():
     backend = os.getenv("MODEL_BACKEND", "local").strip().lower()
 
-    if backend == "groq" or os.getenv("GROQ_API_KEY"):
+    if backend == "groq" or (backend != "local" and os.getenv("GROQ_API_KEY")):
         from langchain_groq import ChatGroq
 
         return ChatGroq(
@@ -186,11 +187,49 @@ def build_llm():
     return LlamaCpp(
         model_path=str(model_file),
         temperature=0,
-        max_tokens=256,
+        max_tokens=128,
         top_p=0.95,
-        n_ctx=4096,
+        n_ctx=2048,
+        n_batch=64,
+        n_threads=max(1, os.cpu_count() or 1),
         verbose=False,
     )
+
+
+def extract_select_sql(text: str) -> str:
+    if not text:
+        return ""
+
+    candidate = text.strip()
+
+    if candidate.startswith("```"):
+        candidate = re.sub(r"^```(?:sql)?", "", candidate).strip()
+        candidate = re.sub(r"```$", "", candidate).strip()
+
+    match = re.search(r"(?is)\bselect\b.+", candidate)
+    if not match:
+        return candidate
+
+    sql_tail = match.group(0).strip()
+    sql_tail = re.split(r"\n\s*\n", sql_tail, maxsplit=1)[0].strip()
+
+    if ";" in sql_tail:
+        sql_tail = sql_tail.split(";", 1)[0].strip()
+
+    return sql_tail
+
+
+def fast_path_sql(question: str) -> str | None:
+    q = question.strip().lower()
+
+    if any(phrase in q for phrase in ["show all tables", "show my tables", "list tables", "all my table", "all tables"]):
+        return (
+            "SELECT name FROM sqlite_master "
+            "WHERE type='table' AND name NOT LIKE 'sqlite_%' "
+            "ORDER BY name"
+        )
+
+    return None
 
 
 def parse_json_like(text: str) -> dict[str, Any]:
@@ -243,6 +282,12 @@ def main() -> None:
     schema = get_schema_description(conn)
     llm = build_llm()
 
+    backend = os.getenv("MODEL_BACKEND", "local").strip().lower()
+    use_ambiguity_check = os.getenv(
+        "USE_AMBIGUITY_CHECK",
+        "0" if backend == "local" else "1",
+    ).strip().lower() in {"1", "true", "yes", "on"}
+
     ambiguity_prompt = ChatPromptTemplate.from_template(
         """
 You are a data assistant. Determine if the user request is ambiguous for SQL generation.
@@ -278,8 +323,25 @@ User question:
 """.strip()
     )
 
+    local_sql_prompt = PromptTemplate.from_template(
+        """
+You are a SQLite query generator.
+Output exactly one SQLite SELECT statement and nothing else.
+No prose. No markdown. No backticks.
+
+Schema:
+{schema}
+
+Question:
+{question}
+
+SQL:
+""".strip()
+    )
+
     ambiguity_chain = ambiguity_prompt | llm | StrOutputParser()
     sql_chain = sql_prompt | llm | StrOutputParser()
+    local_sql_chain = local_sql_prompt | llm | StrOutputParser()
 
     print("Intelligent Data Query System (Llama + LangChain)")
     print(f"Database: {DB_PATH}")
@@ -292,19 +354,29 @@ User question:
         if not question:
             continue
 
-        ambiguity_raw = ambiguity_chain.invoke({"schema": schema, "question": question})
-        ambiguity_data = parse_json_like(ambiguity_raw)
+        fast_sql = fast_path_sql(question)
+        if fast_sql:
+            raw_sql = fast_sql
+        else:
+            if use_ambiguity_check:
+                ambiguity_raw = ambiguity_chain.invoke({"schema": schema, "question": question})
+                ambiguity_data = parse_json_like(ambiguity_raw)
 
-        is_ambiguous = bool(ambiguity_data.get("is_ambiguous", False))
-        clarification = str(ambiguity_data.get("clarification_question", "")).strip()
+                is_ambiguous = bool(ambiguity_data.get("is_ambiguous", False))
+                clarification = str(ambiguity_data.get("clarification_question", "")).strip()
 
-        if is_ambiguous and clarification:
-            print(f"Clarification needed: {clarification}")
-            extra = input("Your clarification: ").strip()
-            if extra:
-                question = f"{question}\nAdditional clarification: {extra}"
+                if is_ambiguous and clarification:
+                    print(f"Clarification needed: {clarification}")
+                    extra = input("Your clarification: ").strip()
+                    if extra:
+                        question = f"{question}\nAdditional clarification: {extra}"
 
-        raw_sql = sql_chain.invoke({"schema": schema, "question": question}).strip()
+            if backend == "local":
+                raw_sql = local_sql_chain.invoke({"schema": schema, "question": question}).strip()
+            else:
+                raw_sql = sql_chain.invoke({"schema": schema, "question": question}).strip()
+
+        raw_sql = extract_select_sql(raw_sql)
         safe, result = validate_sql(raw_sql)
 
         print("\nGenerated SQL:")
