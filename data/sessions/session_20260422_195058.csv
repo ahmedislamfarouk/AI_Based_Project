@@ -1,0 +1,56 @@
+timestamp,video_emotion,voice_arousal,biometric_data,distress_level,recommendation
+2026-04-22T19:50:59.001139,Starting...,Starting...,Starting...,30,I'm here with you.
+2026-04-22T19:51:04.001704,neutral,Low/Stable,"HR: 68.8, EDA: 122.1",30,I'm here with you.
+2026-04-22T19:51:09.002031,neutral,Low/Stable,"HR: 67.7, EDA: 121.7",30,I'm here with you.
+2026-04-22T19:51:14.002442,neutral,Low/Stable,"HR: 65.6, EDA: 127.9",30,I'm here with you.
+2026-04-22T19:51:19.002945,neutral,Low/Stable,"HR: 68.2, EDA: 145.7",30,I'm here with you.
+2026-04-22T19:51:24.003499,neutral,Low/Stable,"HR: 67.7, EDA: 130.3",30,I'm here with you.
+2026-04-22T19:51:29.003842,neutral,Low/Stable,"HR: 68.2, EDA: 130.9",30,I'm here with you.
+2026-04-22T19:51:34.007507,Head Nodding,Low/Stable,"HR: 71.1, EDA: 129.2",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:51:39.008005,neutral,Low/Stable,"HR: 70.3, EDA: 136.0",30,I'm here with you.
+2026-04-22T19:51:44.008251,neutral,Low/Stable,"HR: 71.5, EDA: 133.9",30,I'm here with you.
+2026-04-22T19:51:49.008779,Head Nodding,Low/Stable,"HR: 72.1, EDA: 129.7",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:51:54.009155,neutral,Low/Stable,"HR: 71.4, EDA: 113.5",30,I'm here with you.
+2026-04-22T19:51:59.009589,neutral,Low/Stable,"HR: 71.1, EDA: 121.3",30,I'm here with you.
+2026-04-22T19:52:04.010239,Head Nodding,Low/Stable,"HR: 69.0, EDA: 135.8",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:52:09.010527,neutral,Low/Stable,"HR: 70.2, EDA: 136.2",30,I'm here with you.
+2026-04-22T19:52:14.010941,neutral,Low/Stable,"HR: 69.8, EDA: 150.3",30,I'm here with you.
+2026-04-22T19:52:19.014630,Head Nodding,Low/Stable,"HR: 68.5, EDA: 156.7",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:52:24.015078,neutral,Low/Stable,"HR: 72.2, EDA: 157.5",30,I'm here with you.
+2026-04-22T19:52:29.015382,neutral,Low/Stable,"HR: 75.0, EDA: 148.8",30,I'm here with you.
+2026-04-22T19:52:34.015660,neutral,Low/Stable,"HR: 75.2, EDA: 174.6",30,I'm here with you.
+2026-04-22T19:52:39.015973,neutral,Low/Stable,"HR: 73.0, EDA: 177.4",30,I'm here with you.
+2026-04-22T19:52:44.016283,neutral,Low/Stable,"HR: 74.6, EDA: 156.3",30,I'm here with you.
+2026-04-22T19:52:49.232952,neutral,Low/Stable,"HR: 75.6, EDA: 164.6",30,I'm here with you.
+2026-04-22T19:52:54.234423,neutral,Low/Stable,"HR: 77.3, EDA: 162.5",30,I'm here with you.
+2026-04-22T19:52:59.234790,neutral,Low/Stable,"HR: 80.3, EDA: 164.3",30,I'm here with you.
+2026-04-22T19:53:04.235230,Head Nodding,Low/Stable,"HR: 77.6, EDA: 166.6",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:53:09.235453,neutral,Low/Stable,"HR: 82.0, EDA: 163.4",30,I'm here with you.
+2026-04-22T19:53:14.235781,neutral,Low/Stable,"HR: 83.8, EDA: 162.3",30,I'm here with you.
+2026-04-22T19:53:19.237090,neutral,Low/Stable,"HR: 83.9, EDA: 166.3",30,I'm here with you.
+2026-04-22T19:53:24.237485,neutral,Low/Stable,"HR: 88.5, EDA: 150.7",30,I'm here with you.
+2026-04-22T19:53:29.237806,neutral,Low/Stable,"HR: 90.4, EDA: 164.8",30,I'm here with you.
+2026-04-22T19:53:34.238080,Head Nodding,Low/Stable,"HR: 88.4, EDA: 150.7",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:53:39.238309,Head Nodding,Low/Stable,"HR: 86.6, EDA: 132.9",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:53:44.238558,neutral,Low/Stable,"HR: 87.3, EDA: 120.0",30,I'm here with you.
+2026-04-22T19:53:49.238830,neutral,Low/Stable,"HR: 90.5, EDA: 156.9",30,I'm here with you.
+2026-04-22T19:53:54.239194,neutral,Low/Stable,"HR: 87.7, EDA: 162.9",30,I'm here with you.
+2026-04-22T19:53:59.239554,neutral,Low/Stable,"HR: 86.5, EDA: 152.7",30,I'm here with you.
+2026-04-22T19:54:04.240285,neutral,Low/Stable,"HR: 87.8, EDA: 149.1",30,I'm here with you.
+2026-04-22T19:54:09.240880,neutral,Low/Stable,"HR: 86.1, EDA: 156.6",30,I'm here with you.
+2026-04-22T19:54:14.241368,neutral,Low/Stable,"HR: 86.6, EDA: 180.3",30,I'm here with you.
+2026-04-22T19:54:19.241614,Head Nodding,Low/Stable,"HR: 83.1, EDA: 166.6",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:54:24.241899,neutral,Low/Stable,"HR: 84.3, EDA: 150.0",30,I'm here with you.
+2026-04-22T19:54:29.242272,Head Nodding,Low/Stable,"HR: 83.1, EDA: 141.0",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:54:34.242650,Head Nodding,Low/Stable,"HR: 80.3, EDA: 118.3",30,Your head is nodding — you might be falling asleep.
+2026-04-22T19:54:39.243094,neutral,Low/Stable,"HR: 78.0, EDA: 121.5",30,I'm here with you.
+2026-04-22T19:54:44.243489,neutral,Low/Stable,"HR: 78.3, EDA: 118.9",30,I'm here with you.
+2026-04-22T19:54:49.244375,neutral,Low/Stable,"HR: 79.6, EDA: 105.2",30,I'm here with you.
+2026-04-22T19:54:54.244861,neutral,Low/Stable,"HR: 81.0, EDA: 84.3",30,I'm here with you.
+2026-04-22T19:54:59.245168,neutral,Low/Stable,"HR: 78.5, EDA: 80.4",30,I'm here with you.
+2026-04-22T19:55:04.245498,neutral,Low/Stable,"HR: 73.1, EDA: 57.1",30,I'm here with you.
+2026-04-22T19:55:09.245765,neutral,Low/Stable,"HR: 71.4, EDA: 48.9",30,I'm here with you.
+2026-04-22T19:55:14.246042,neutral,Low/Stable,"HR: 68.0, EDA: 37.4",30,I'm here with you.
+2026-04-22T19:55:19.246403,neutral,Low/Stable,"HR: 66.5, EDA: 36.0",30,I'm here with you.
+2026-04-22T19:55:24.246715,neutral,Low/Stable,"HR: 68.2, EDA: 46.6",30,I'm here with you.
+2026-04-22T19:55:29.247369,neutral,Low/Stable,"HR: 66.1, EDA: 61.0",30,I'm here with you.

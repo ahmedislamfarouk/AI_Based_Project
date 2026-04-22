@@ -28,12 +28,19 @@ services:
     # For laptop camera/mic testing, run with:
     #   docker-compose run --device=/dev/video0 --device=/dev/snd ai-based-system
     # ports:
-    #   - "8501:8501"  # Streamlit dashboard
+    #   - "8000:8000"  # FastAPI web app
     network_mode: host
     devices:
       - /dev/video0:/dev/video0  # Camera
       - /dev/snd:/dev/snd  # Audio
-    command: streamlit run live_dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: uvicorn web_app:app --host 0.0.0.0 --port 8000
     stdin_open: true
     tty: true
     restart: unless-stopped

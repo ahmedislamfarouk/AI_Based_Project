@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     libpulse-dev \
     libasound2-dev \
     libusb-1.0-0 \
+    ffmpeg \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
@@ -22,9 +23,9 @@ RUN apt-get update && apt-get install -y \
 # Copy main requirements first
 COPY requirements.txt .
 
-# Install only CPU versions to keep image small
+# Install GPU-enabled PyTorch (CUDA 12.1) and dependencies
 RUN pip install --no-cache-dir \
-    torch --index-url https://download.pytorch.org/whl/cpu && \
+    torch torchvision torchaudio && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
@@ -41,11 +42,11 @@ RUN chmod +x /app/entrypoint.sh
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Expose ports (Streamlit dashboard if used)
-EXPOSE 8501
+# Expose ports (FastAPI web app)
+EXPOSE 8000
 
 # Use entrypoint script
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Default command
-CMD ["streamlit", "run", "live_dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0", "--server.headless", "true"]
+CMD ["uvicorn", "web_app:app", "--host", "0.0.0.0", "--port", "8000"]

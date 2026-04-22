@@ -232,17 +232,17 @@ function updateUI(data) {
 
   // Metrics
   document.getElementById('metricVideo').textContent = data.video_emotion || 'Idle';
-  document.getElementById('metricVoice').textContent = data.voice_arousal || 'Idle';
+  document.getElementById('metricVoice').textContent = data.voice_emotion || 'Idle';
   document.getElementById('metricBio').textContent = data.biometric_data || 'Idle';
 
   prevVideo = data.video_emotion;
-  prevVoice = data.voice_arousal;
+  prevVoice = data.voice_emotion;
   prevBio = data.biometric_data;
 
   // Sparklines
   if (isRunning) {
     sparkVideo.push(data.video_emotion === 'Idle' ? 0 : Math.random() * 50 + 20);
-    sparkVoice.push(data.voice_arousal === 'Idle' ? 0 : Math.random() * 40 + 30);
+    sparkVoice.push(data.voice_emotion === 'Idle' ? 0 : Math.random() * 40 + 30);
     sparkBio.push(data.biometric_data === 'Idle' ? 70 : 70 + Math.random() * 20 - 10);
     if (sparkVideo.length > 20) sparkVideo.shift();
     if (sparkVoice.length > 20) sparkVoice.shift();
@@ -272,7 +272,17 @@ function updateUI(data) {
   emotionTag.style.color = colors.text;
   emotionTag.style.border = 'none';
 
-  document.getElementById('recommendationText').textContent = data.recommendation || 'No recommendation yet.';
+  document.getElementById('recommendationText').textContent = data.llm_response || 'No recommendation yet.';
+
+  // STT text
+  const sttEl = document.getElementById('sttText');
+  const sttContent = document.getElementById('sttContent');
+  if (data.stt_text && data.stt_text.trim()) {
+    sttEl.classList.remove('hidden');
+    sttContent.textContent = data.stt_text;
+  } else {
+    sttEl.classList.add('hidden');
+  }
 
   // Distress gauge
   updateGauge(Number(data.distress) || 0);
@@ -338,7 +348,7 @@ function updateSidebar(rows) {
   slice.forEach(r => {
     const timeStr = r.timestamp ? new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
     const level = Number(r.distress_level) || 0;
-    const rec = r.recommendation || '-';
+    const rec = r.llm_response || r.recommendation || '-';
     const emotion = r.video_emotion || 'Idle';
     const colors = emotionColors[emotion] || emotionColors['Neutral'];
 

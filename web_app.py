@@ -27,14 +27,13 @@ from modules.output.session_logger import SessionLogger
 # --- Advanced emotion model (optional) ---
 try:
     from EmotionDetection import analyze_faces_and_draw, get_face_mesh
-    _face_mesh = get_face_mesh()
     REAL_MODEL_AVAILABLE = True
+    print("[Startup] Advanced emotion model (DeepFace) available.")
 except Exception as e:
     print(f"[Startup] Advanced emotion model unavailable: {e}")
     REAL_MODEL_AVAILABLE = False
-    _face_mesh = None
 
-app = FastAPI(title="Multimodal Emotion Monitor", version="1.0")
+app = FastAPI(title="Multimodal Emotion Monitor", version="2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,9 +46,11 @@ app.add_middleware(
 # --- Global Shared State ---
 system_state = {
     "video_emotion": "Idle",
-    "voice_arousal": "Idle",
+    "voice_emotion": "Idle",
     "biometric_data": "Idle",
-    "ai_recommendation": {"distress": 0, "recommendation": "Start a session to begin monitoring."}
+    "stt_text": "",
+    "llm_response": "Start a session to begin monitoring.",
+    "distress": 0,
 }
 running = False
 current_logger = None
@@ -72,24 +73,6 @@ biometric_processor = BiometricProcessor()
 fusion_agent = FusionAgent()
 tts_engine = TTSEngine()
 
-# --- Fallback therapist text map ---
-THERAPIST_RESPONSES = {
-    "Happy": "You seem so happy right now! Keep embracing that positive energy.",
-    "Sad": "I can see you're feeling down. That's okay — I'm here with you.",
-    "Angry": "I sense some frustration. Take a deep breath with me.",
-    "Fear": "You look a little worried. That's completely normal. I'm right here.",
-    "Surprise": "Oh! Something caught your attention! Tell me what happened!",
-    "Neutral": "I'm here with you. How are you feeling right now?",
-    "Drowsiness": "You seem really tired. Maybe it's time for a short break?",
-    "Yawning": "I see you yawning... Have you been getting enough rest?",
-    "Head Nodding": "Your head is nodding — you might be falling asleep.",
-    "Anxious/High Arousal (Close)": "I notice you're quite close. Try to relax a bit.",
-    "Calm/Attentive": "You look calm and attentive. That's great.",
-    "No Face Detected": "I can't see your face clearly. Please adjust your position.",
-    "No Frame": "Waiting for video feed...",
-    "Idle": "Start a session to begin monitoring.",
-}
-
 # --- Helpers ---
 
 def get_state_payload():
@@ -97,10 +80,11 @@ def get_state_payload():
         return {
             "running": running,
             "video_emotion": system_state["video_emotion"],
-            "voice_arousal": system_state["voice_arousal"],
+            "voice_emotion": system_state["voice_emotion"],
             "biometric_data": system_state["biometric_data"],
-            "distress": system_state["ai_recommendation"].get("distress", 0),
-            "recommendation": system_state["ai_recommendation"].get("recommendation", ""),
+            "stt_text": system_state["stt_text"],
+            "llm_response": system_state["llm_response"],
+            "distress": system_state["distress"],
         }
 
 # --- Background Worker Threads ---
@@ -118,6 +102,15 @@ def frame_reader():
 
 def video_worker():
     global latest_display_frame, system_state
+    face_mesh = None
+    if REAL_MODEL_AVAILABLE:
+        try:
+            face_mesh = get_face_mesh()
+            print("[VideoWorker] DeepFace FaceMesh initialized in worker thread.")
+        except Exception as e:
+            print(f"[VideoWorker] Failed to init FaceMesh: {e}")
+            face_mesh = None
+
     while True:
         if not running:
             time.sleep(0.5)
@@ -125,13 +118,13 @@ def video_worker():
         with frame_lock:
             frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
         if frame is not None:
-            if REAL_MODEL_AVAILABLE and _face_mesh:
+            if REAL_MODEL_AVAILABLE and face_mesh is not None:
                 try:
-                    annotated, states = analyze_faces_and_draw(frame, _face_mesh)
-                    current_state = states[0] if states else "Neutral"
+                    annotated, states = analyze_faces_and_draw(frame, face_mesh)
+                    current_state = states[0] if states else "No Face Detected"
                 except Exception as e:
                     print(f"[VideoWorker] Advanced model error: {e}")
-                    annotated = frame
+                    annotated = frame.copy()
                     current_state = video_analyzer.analyze_frame_given(frame) if video_analyzer else "No Camera"
             else:
                 current_state = video_analyzer.analyze_frame_given(frame) if video_analyzer else "No Camera"
@@ -153,12 +146,11 @@ def voice_worker():
             time.sleep(0.5)
             continue
         try:
-            arousal = voice_analyzer.analyze_audio()
+            emotion = voice_analyzer.analyze_audio()
             with state_lock:
-                system_state["voice_arousal"] = arousal
+                system_state["voice_emotion"] = emotion
         except Exception as e:
-            with state_lock:
-                system_state["voice_arousal"] = f"Error: {e}"
+            print(f"[VoiceWorker] Error: {e}")
         time.sleep(0.5)
 
 def biometric_worker():
@@ -179,50 +171,45 @@ def biometric_worker():
 def ai_fusion_worker():
     global system_state, current_logger
     last_recommendation = ""
+    last_stt = ""
     while True:
         if not running:
             time.sleep(1)
             continue
         try:
             with state_lock:
-                voice = system_state["voice_arousal"]
+                face_emotion = system_state["video_emotion"]
+                voice_emotion = system_state["voice_emotion"]
                 biometric = system_state["biometric_data"]
-                video = system_state["video_emotion"]
 
-            recommendation = fusion_agent.fuse_inputs(voice, biometric, video)
-            if isinstance(recommendation, str):
-                try:
-                    start = recommendation.find("{")
-                    end = recommendation.find("}") + 1
-                    recommendation = json.loads(recommendation[start:end])
-                except Exception:
-                    pass
+            stt_text = voice_analyzer.get_latest_transcript()
+            if stt_text and stt_text != last_stt:
+                # New transcript detected, could trigger immediate response
+                pass
 
-            if not isinstance(recommendation, dict):
-                recommendation = {"distress": 50, "recommendation": str(recommendation)}
+            result = fusion_agent.fuse_inputs(face_emotion, voice_emotion, biometric, stt_text)
+            if not isinstance(result, dict):
+                result = {"distress": 50, "response": str(result)}
 
-            rec_text = recommendation.get("recommendation", "")
-            distress = recommendation.get("distress", 0)
-
-            if not rec_text or rec_text.strip().lower() in ["no action needed", "no change (mock mode)"]:
-                rec_text = THERAPIST_RESPONSES.get(video, "I'm here with you.")
-
-            if distress > 70:
-                rec_text = f"I can see you're going through something. {rec_text} Take a deep breath with me."
-            elif distress > 40:
-                rec_text = f"{rec_text} Try to relax your shoulders."
-
-            recommendation["recommendation"] = rec_text
+            distress = result.get("distress", 0)
+            response = result.get("response", "I'm here with you.")
 
             with state_lock:
-                system_state["ai_recommendation"] = recommendation
+                system_state["llm_response"] = response
+                system_state["distress"] = distress
+                system_state["stt_text"] = stt_text
 
             if current_logger:
                 current_logger.log_event(system_state)
 
-            if rec_text and rec_text != last_recommendation and distress >= 50:
-                tts_engine.speak(rec_text)
-                last_recommendation = rec_text
+            if response and response != last_recommendation and distress >= 40:
+                tts_engine.speak(response)
+                last_recommendation = response
+
+            if stt_text and stt_text != last_stt:
+                last_stt = stt_text
+                # Optionally clear transcript after processing
+                # voice_analyzer.clear_transcript()
 
         except Exception as e:
             print(f"[AI Fusion] Error: {e}")
@@ -247,9 +234,11 @@ def start_session():
     current_logger = SessionLogger()
     with state_lock:
         system_state["video_emotion"] = "Starting..."
-        system_state["voice_arousal"] = "Starting..."
+        system_state["voice_emotion"] = "Starting..."
         system_state["biometric_data"] = "Starting..."
-        system_state["ai_recommendation"] = {"distress": 0, "recommendation": "Initializing..."}
+        system_state["llm_response"] = "Initializing..."
+        system_state["distress"] = 0
+    voice_analyzer.clear_transcript()
     return {"status": "started"}
 
 @app.post("/api/stop")
@@ -258,9 +247,11 @@ def stop_session():
     running = False
     with state_lock:
         system_state["video_emotion"] = "Idle"
-        system_state["voice_arousal"] = "Idle"
+        system_state["voice_emotion"] = "Idle"
         system_state["biometric_data"] = "Idle"
-        system_state["ai_recommendation"] = {"distress": 0, "recommendation": "Session stopped. Start again when ready."}
+        system_state["llm_response"] = "Session stopped. Start again when ready."
+        system_state["distress"] = 0
+        system_state["stt_text"] = ""
     return {"status": "stopped"}
 
 @app.get("/api/history")
