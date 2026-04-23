@@ -33,6 +33,6 @@ websockets
 aiofiles
 pandas
 transformers
-torchaudio
 faster-whisper
 ctranslate2
+soundfile

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ai-based-system:
     build:
@@ -7,12 +5,17 @@ services:
       dockerfile: Dockerfile
     container_name: emotion-monitor
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - NEWS_API_KEY=${NEWS_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - NEWS_API_KEY=${NEWS_API_KEY:-}
       - SERIAL_PORT=${SERIAL_PORT:-/dev/ttyUSB0}
+      - CAMERA_SOURCE=${CAMERA_SOURCE:-browser}
       - CAMERA_ID=${CAMERA_ID:-0}
       - AUDIO_CHANNELS=${AUDIO_CHANNELS:-1}
       - DISPLAY=${DISPLAY:-}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - MEDIAPIPE_DISABLE_GPU=0
+      - FACE_ANALYSIS_URL=http://127.0.0.1:8001
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -30,15 +33,21 @@ services:
     # ports:
     #   - "8000:8000"  # FastAPI web app
     network_mode: host
-    devices:
-      - /dev/video0:/dev/video0  # Camera
-      - /dev/snd:/dev/snd  # Audio
+    # Browser camera mode (default): do not map /dev/video0.
+    # If you explicitly want host camera mode, set CAMERA_SOURCE=device
+    # and uncomment /dev/video0 mapping.
+    # No host media devices are required in browser mode.
+    # If you switch to host device mode, map devices explicitly:
+    # devices:
+    #   - /dev/snd:/dev/snd
+    #   - /dev/video0:/dev/video0
+    runtime: nvidia
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              count: 1
               capabilities: [gpu]
     command: uvicorn web_app:app --host 0.0.0.0 --port 8000
     stdin_open: true

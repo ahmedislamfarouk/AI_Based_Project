@@ -30,9 +30,7 @@
       --easing: cubic-bezier(0.16, 1, 0.3, 1);
       --sidebar-width: 340px;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html, body {
       font-family: 'Fira Sans', sans-serif;
       background: var(--bg-deep);
@@ -40,552 +38,100 @@
       height: 100vh;
       overflow: hidden;
     }
-
-    /* Ambient background */
-    .ambient-container {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .ambient-blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.05;
-      animation: float 25s ease-in-out infinite;
-    }
-
+    .ambient-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .ambient-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.05; animation: float 25s ease-in-out infinite; }
     .blob-1 { width: 700px; height: 700px; background: var(--accent); top: -15%; left: -15%; animation-delay: 0s; }
     .blob-2 { width: 600px; height: 600px; background: var(--cyan); bottom: -15%; right: 5%; animation-delay: -8s; }
     .blob-3 { width: 500px; height: 500px; background: #5E6AD2; top: 50%; left: 40%; animation-delay: -16s; }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(40px, -30px) scale(1.1); }
-      66% { transform: translate(-30px, 20px) scale(0.9); }
-    }
-
-    /* Entrance animations */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-in {
-      animation: fadeUp 0.6s var(--easing) forwards;
-      opacity: 0;
-    }
-
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
-    .delay-4 { animation-delay: 0.4s; }
-
-    /* Glass card */
-    .glass-card {
-      background: var(--surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      transition: all 0.3s var(--easing);
-    }
-
-    .glass-card:hover {
-      background: var(--surface-hover);
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-
-    /* Status dots */
-    .status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      position: relative;
-    }
-
-    .status-dot::after {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 50%;
-      animation: statusPulse 2s infinite;
-    }
-
-    .status-dot.active {
-      background: var(--accent);
-      box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
-    }
+    @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(40px, -30px) scale(1.1); } 66% { transform: translate(-30px, 20px) scale(0.9); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeUp 0.6s var(--easing) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; }
+    .glass-card { background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius); transition: all 0.3s var(--easing); }
+    .glass-card:hover { background: var(--surface-hover); border-color: rgba(255, 255, 255, 0.12); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; position: relative; }
+    .status-dot::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; animation: statusPulse 2s infinite; }
+    .status-dot.active { background: var(--accent); box-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
     .status-dot.active::after { border: 1px solid rgba(0, 255, 136, 0.3); }
-
-    .status-dot.idle {
-      background: #6B7280;
-    }
+    .status-dot.idle { background: #6B7280; }
     .status-dot.idle::after { border: 1px solid rgba(107, 114, 128, 0.3); animation: none; }
-
-    .status-dot.error {
-      background: var(--danger);
-      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-    }
+    .status-dot.error { background: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
     .status-dot.error::after { border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    @keyframes statusPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0; }
-    }
-
-    /* Connection pill */
-    .connection-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-    }
-
-    .connection-pill.connected {
-      border-color: rgba(0, 255, 136, 0.2);
-      background: rgba(0, 255, 136, 0.05);
-    }
-
-    /* Main layout */
-    .app-layout {
-      display: flex;
-      height: 100vh;
-      position: relative;
-      z-index: 1;
-    }
-
-    .main-content {
-      flex: 1;
-      min-width: 0;
-      overflow-y: auto;
-      padding: 20px 24px;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: var(--sidebar-width);
-      flex-shrink: 0;
-      border-left: 1px solid var(--border);
-      background: rgba(5, 5, 6, 0.6);
-      backdrop-filter: blur(20px);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .sidebar-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 16px 16px;
-    }
-
-    /* Video */
-    .video-wrap {
-      position: relative;
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      transition: all 0.3s var(--easing);
-    }
-
-    .video-wrap:hover {
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-
-    .video-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .video-badge {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-    }
-
-    .video-overlay-bottom {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 40px 14px 14px;
-      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
-      pointer-events: none;
-    }
-
-    .fs-btn {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      padding: 7px;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      z-index: 10;
-    }
-
+    @keyframes statusPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0; } }
+    .connection-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: var(--surface); border: 1px solid var(--border); backdrop-filter: blur(10px); }
+    .connection-pill.connected { border-color: rgba(0, 255, 136, 0.2); background: rgba(0, 255, 136, 0.05); }
+    .app-layout { display: flex; height: 100vh; position: relative; z-index: 1; }
+    .main-content { flex: 1; min-width: 0; overflow-y: auto; padding: 20px 24px; }
+    .sidebar { width: var(--sidebar-width); flex-shrink: 0; border-left: 1px solid var(--border); background: rgba(5, 5, 6, 0.6); backdrop-filter: blur(20px); display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-content { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+    .video-wrap { position: relative; border-radius: var(--radius); overflow: hidden; background: var(--bg-elevated); border: 1px solid var(--border); transition: all 0.3s var(--easing); }
+    .video-wrap:hover { border-color: rgba(255, 255, 255, 0.12); }
+    .video-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-badge { position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
+    .video-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 14px 14px; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%); pointer-events: none; }
+    .fs-btn { position: absolute; top: 14px; right: 14px; padding: 7px; border-radius: 8px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: white; cursor: pointer; transition: all 0.2s ease; z-index: 10; }
     .fs-btn:hover { background: rgba(0,0,0,0.7); }
-
-    /* Therapist */
-    .therapist-wrap {
-      position: relative;
-      padding: 24px;
-      background: linear-gradient(145deg, rgba(0,255,136,0.03), rgba(34,211,238,0.03));
-      border: 1px solid rgba(0, 255, 136, 0.12);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .therapist-wrap::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--cyan));
-    }
-
-    .therapist-wrap::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Gauge */
-    .gauge-wrap {
-      position: relative;
-      width: 130px;
-      height: 130px;
-      margin: 0 auto;
-    }
-
-    .gauge-bg {
-      fill: none;
-      stroke: rgba(255,255,255,0.06);
-      stroke-width: 8;
-    }
-
-    .gauge-fill {
-      fill: none;
-      stroke-width: 8;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.8s var(--easing), stroke 0.4s ease;
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
-    }
-
-    .gauge-center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .gauge-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--foreground-muted);
-      margin-top: 4px;
-    }
-
-    /* Buttons */
-    .btn-primary {
-      padding: 12px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(135deg, #059669, #00FF88);
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s var(--easing);
-      box-shadow: 0 4px 20px rgba(0, 255, 136, 0.2);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 28px rgba(0, 255, 136, 0.3);
-    }
-
+    .therapist-wrap { position: relative; padding: 24px; background: linear-gradient(145deg, rgba(0,255,136,0.03), rgba(34,211,238,0.03)); border: 1px solid rgba(0, 255, 136, 0.12); border-radius: var(--radius); overflow: hidden; }
+    .therapist-wrap::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--cyan)); }
+    .therapist-wrap::after { content: ''; position: absolute; top: -50%; right: -50%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 70%); pointer-events: none; }
+    .gauge-wrap { position: relative; width: 130px; height: 130px; margin: 0 auto; }
+    .gauge-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+    .gauge-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.8s var(--easing), stroke 0.4s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+    .gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .gauge-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--foreground-muted); margin-top: 4px; }
+    .btn-primary { padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: white; background: linear-gradient(135deg, #059669, #00FF88); border: none; cursor: pointer; transition: all 0.2s var(--easing); box-shadow: 0 4px 20px rgba(0, 255, 136, 0.2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(0, 255, 136, 0.3); }
     .btn-primary:active:not(:disabled) { transform: scale(0.97); }
     .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
-
-    .btn-secondary {
-      padding: 12px 20px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(135deg, #DC2626, #EF4444);
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s var(--easing);
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 28px rgba(239, 68, 68, 0.3);
-    }
-
+    .btn-secondary { padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: white; background: linear-gradient(135deg, #DC2626, #EF4444); border: none; cursor: pointer; transition: all 0.2s var(--easing); box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-secondary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(239, 68, 68, 0.3); }
     .btn-secondary:active:not(:disabled) { transform: scale(0.97); }
     .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
-
-    /* Metrics */
-    .metric-box {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .metric-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .metric-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--foreground-muted);
-    }
-
-    .metric-trend {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-family: 'Fira Code', monospace;
-    }
-
+    .btn-blue { padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: white; background: linear-gradient(135deg, #2563EB, #3B82F6); border: none; cursor: pointer; transition: all 0.2s var(--easing); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-blue:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(59, 130, 246, 0.3); }
+    .btn-blue:active:not(:disabled) { transform: scale(0.97); }
+    .btn-blue:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+    .metric-box { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .metric-header { display: flex; align-items: center; justify-content: space-between; }
+    .metric-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--foreground-muted); }
+    .metric-trend { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-family: 'Fira Code', monospace; }
     .metric-trend.stable { background: rgba(245, 158, 11, 0.1); color: #FBBF24; }
-
-    .metric-data {
-      font-family: 'Fira Code', monospace;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--foreground);
-      line-height: 1.3;
-    }
-
-    .metric-sparkline {
-      height: 28px;
-      opacity: 0.6;
-    }
-
-    /* Chart */
-    .chart-wrap {
-      position: relative;
-      height: 260px;
-      width: 100%;
-    }
-
-    /* Sidebar table */
-    .sidebar-table { width: 100%; border-collapse: collapse; }
-    .sidebar-table th {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--foreground-muted);
-      padding: 10px 8px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: rgba(5, 5, 6, 0.95);
-      backdrop-filter: blur(10px);
-      z-index: 10;
-    }
-    .sidebar-table td {
-      padding: 10px 8px;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      transition: background 0.15s ease;
-    }
-    .sidebar-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-    /* System status */
-    .system-status {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      border: 1px solid var(--border);
-    }
-
-    .system-status-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--foreground-muted);
-    }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--foreground-muted);
-      margin-bottom: 10px;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
-
+    .metric-data { font-family: 'Fira Code', monospace; font-size: 15px; font-weight: 600; color: var(--foreground); line-height: 1.3; }
+    .metric-sparkline { height: 28px; opacity: 0.6; }
+    .chart-wrap { position: relative; height: 260px; width: 100%; }
+    .system-status { display: flex; align-items: center; gap: 16px; padding: 10px 16px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); }
+    .system-status-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--foreground-muted); }
+    .section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--foreground-muted); margin-bottom: 10px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; } ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
     .font-mono-data { font-family: 'Fira Code', monospace; }
-
-    .text-gradient {
-      background: linear-gradient(135deg, var(--accent), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Fullscreen video */
-    .video-wrap.fullscreen {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      border-radius: 0;
-      border: none;
-    }
-
-    .video-wrap.fullscreen img {
-      object-fit: contain;
-      background: black;
-    }
-
-    /* Sidebar event item */
-    .event-item {
-      padding: 14px;
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      margin-bottom: 8px;
-      transition: all 0.2s var(--easing);
-    }
-
-    .event-item:hover {
-      background: var(--surface-hover);
-      border-color: rgba(255, 255, 255, 0.12);
-      transform: translateX(2px);
-    }
-
-    .event-time {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--foreground-muted);
-      margin-bottom: 6px;
-    }
-
-    .event-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .event-emotion {
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .event-distress {
-      font-family: 'Fira Code', monospace;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .event-rec {
-      font-size: 11px;
-      color: var(--foreground-muted);
-      margin-top: 6px;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* Responsive sidebar collapse */
-    @media (max-width: 1100px) {
-      .sidebar { display: none; }
-    }
+    .text-gradient { background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .video-wrap.fullscreen { position: fixed; inset: 0; z-index: 100; border-radius: 0; border: none; }
+    .video-wrap.fullscreen img { object-fit: contain; background: black; }
+    .event-item { padding: 14px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); margin-bottom: 8px; transition: all 0.2s var(--easing); }
+    .event-item:hover { background: var(--surface-hover); border-color: rgba(255, 255, 255, 0.12); transform: translateX(2px); }
+    .event-time { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--foreground-muted); margin-bottom: 6px; }
+    .event-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .event-emotion { font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    .event-distress { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 700; }
+    .event-rec { font-size: 11px; color: var(--foreground-muted); margin-top: 6px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .mode-tab { padding: 10px 24px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s var(--easing); border: 1px solid var(--border); background: var(--surface); color: var(--foreground-muted); }
+    .mode-tab:hover { background: var(--surface-hover); }
+    .mode-tab.active { background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.3); color: var(--accent); }
+    .rec-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+    .rec-indicator.active { background: rgba(239, 68, 68, 0.15); color: #EF4444; animation: recBlink 1s ease-in-out infinite; }
+    .rec-indicator.idle { background: rgba(107, 114, 128, 0.1); color: #6B7280; }
+    @keyframes recBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .result-card { padding: 16px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border); }
+    .result-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--foreground-muted); margin-bottom: 4px; }
+    .result-value { font-family: 'Fira Code', monospace; font-size: 16px; font-weight: 700; color: var(--foreground); }
+    .processing-overlay { position: absolute; inset: 0; background: rgba(2, 2, 3, 0.85); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; border-radius: var(--radius); }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 1100px) { .sidebar { display: none; } }
   </style>
 </head>
 <body>
-  <!-- Ambient Background -->
   <div class="ambient-container">
     <div class="ambient-blob blob-1"></div>
     <div class="ambient-blob blob-2"></div>
@@ -593,12 +139,9 @@
   </div>
 
   <div class="app-layout">
-
-    <!-- Main Content -->
     <main class="main-content">
       <div class="max-w-5xl mx-auto space-y-5">
 
-        <!-- Header -->
         <header class="animate-in flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -618,176 +161,205 @@
           </div>
         </header>
 
-        <!-- System Status Bar -->
-        <div class="animate-in delay-1 system-status flex-wrap">
-          <div class="system-status-item">
-            <span id="statusVideo" class="status-dot idle"></span>
-            <span>Video</span>
-          </div>
-          <div class="system-status-item">
-            <span id="statusVoice" class="status-dot idle"></span>
-            <span>Voice</span>
-          </div>
-          <div class="system-status-item">
-            <span id="statusBio" class="status-dot idle"></span>
-            <span>Biometrics</span>
-          </div>
-          <div class="system-status-item">
-            <span id="statusAI" class="status-dot idle"></span>
-            <span>AI Fusion</span>
-          </div>
-          <div class="flex-1"></div>
-          <div id="sessionBadge" class="status-pill" style="background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.2); color: #9CA3AF;">
-            <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-            Idle
-          </div>
+        <div class="animate-in delay-1 flex gap-2">
+          <button id="modeLiveBtn" class="mode-tab active" onclick="switchMode('live')">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Live Monitoring
+          </button>
+          <button id="modeVideoBtn" class="mode-tab" onclick="switchMode('video')">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Video Session
+          </button>
         </div>
 
-        <!-- Top Row: Video + Therapist -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in delay-2">
-
-          <!-- Video -->
-          <div id="videoContainer" class="video-wrap" style="aspect-ratio: 16/10;">
-            <img id="videoFeed" src="/video_feed" alt="Live Feed" onerror="handleVideoError(this)">
-            <div class="video-overlay-bottom"></div>
-            <div class="video-badge">
-              <span id="camDot" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-              <span id="camStatus">Idle</span>
+        <div id="liveMode" class="space-y-5">
+          <div class="system-status flex-wrap animate-in delay-1">
+            <div class="system-status-item"><span id="statusVideo" class="status-dot idle"></span><span>Video</span></div>
+            <div class="system-status-item"><span id="statusVoice" class="status-dot idle"></span><span>Voice</span></div>
+            <div class="system-status-item"><span id="statusBio" class="status-dot idle"></span><span>Biometrics</span></div>
+            <div class="system-status-item"><span id="statusAI" class="status-dot idle"></span><span>AI Fusion</span></div>
+            <div class="flex-1"></div>
+            <div id="sessionBadge" class="status-pill" style="background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.2); color: #9CA3AF;">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>Idle
             </div>
-            <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-            </button>
-            <div id="videoPlaceholder" class="hidden absolute inset-0 flex items-center justify-center" style="background: var(--bg-elevated);">
-              <div class="text-center" style="color: var(--foreground-muted);">
-                <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                <p class="text-sm font-medium">Camera feed unavailable</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in delay-2">
+            <div id="videoContainer" class="video-wrap" style="aspect-ratio: 16/10;">
+              <img id="videoFeed" src="/video_feed" alt="Live Feed" onerror="handleVideoError(this)">
+              <div class="video-overlay-bottom"></div>
+              <div class="video-badge">
+                <span id="camDot" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                <span id="camStatus">Idle</span>
+              </div>
+              <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+              </button>
+              <div id="videoPlaceholder" class="hidden absolute inset-0 flex items-center justify-center" style="background: var(--bg-elevated);">
+                <div class="text-center" style="color: var(--foreground-muted);">
+                  <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <p class="text-sm font-medium">Camera feed unavailable</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="therapist-wrap">
+              <div class="text-center space-y-4 relative z-10">
+                <div>
+                  <div class="flex items-center justify-center gap-2 mb-2">
+                    <svg class="w-4 h-4" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    <span class="text-xs font-bold uppercase tracking-[0.2em]" style="color: var(--accent);">AI Therapist</span>
+                  </div>
+                  <div id="emotionTag" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: #FBBF24;">
+                    <span id="emotionEmoji">&#x1F4A4;</span>
+                    <span>Idle</span>
+                  </div>
+                </div>
+                <div id="recommendationText" class="text-base font-medium leading-relaxed" style="color: var(--foreground);">
+                  Start a session to begin monitoring your emotional state.
+                </div>
+                <div id="sttText" class="text-sm font-medium leading-relaxed hidden" style="color: var(--cyan);">
+                  &#x1F3A4; <span id="sttContent"></span>
+                </div>
+                <div class="gauge-wrap">
+                  <svg viewBox="0 0 130 130" class="w-full h-full">
+                    <circle class="gauge-bg" cx="65" cy="65" r="58"/>
+                    <circle id="gaugeFill" class="gauge-fill" cx="65" cy="65" r="58"
+                      stroke-dasharray="364.42" stroke-dashoffset="364.42" stroke="var(--accent)"/>
+                  </svg>
+                  <div class="gauge-center">
+                    <span id="distressValue" class="font-mono-data text-3xl font-bold" style="color: var(--foreground);">0</span>
+                    <span class="gauge-label">Distress</span>
+                  </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                  <button onclick="startSession()" id="btnStart" class="btn-primary flex-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Start Session
+                  </button>
+                  <button onclick="stopSession()" id="btnStop" class="btn-secondary flex-1" disabled>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                    Stop
+                  </button>
+                </div>
+                <div id="sessionStatus" class="text-xs" style="color: var(--foreground-muted);">Press Start to begin monitoring</div>
               </div>
             </div>
           </div>
 
-          <!-- Therapist Card -->
-          <div class="therapist-wrap">
-            <div class="text-center space-y-4 relative z-10">
-              <div>
-                <div class="flex items-center justify-center gap-2 mb-2">
+          <div class="animate-in delay-3">
+            <div class="section-title">Live Metrics</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="glass-card metric-box"><div class="metric-header"><div class="metric-title"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>Video Emotion</div><span id="trendVideo" class="metric-trend stable">&#x25CF;</span></div><div id="metricVideo" class="metric-data">Idle</div><canvas id="sparkVideo" class="metric-sparkline" width="200" height="28"></canvas></div>
+              <div class="glass-card metric-box"><div class="metric-header"><div class="metric-title"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>Voice Emotion</div><span id="trendVoice" class="metric-trend stable">&#x25CF;</span></div><div id="metricVoice" class="metric-data">Idle</div><canvas id="sparkVoice" class="metric-sparkline" width="200" height="28"></canvas></div>
+              <div class="glass-card metric-box"><div class="metric-header"><div class="metric-title"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Biometrics</div><span id="trendBio" class="metric-trend stable">&#x25CF;</span></div><div id="metricBio" class="metric-data">Idle</div><canvas id="sparkBio" class="metric-sparkline" width="200" height="28"></canvas></div>
+            </div>
+          </div>
+
+          <div class="animate-in delay-4 glass-card p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div><h3 class="text-sm font-semibold text-white">Distress Trend</h3><p class="text-xs mt-0.5" style="color: var(--foreground-muted);">Real-time monitoring &bull; Last 50 data points</p></div>
+              <div class="flex items-center gap-4"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: var(--accent);"></span><span class="text-xs" style="color: var(--foreground-muted);">Distress</span></div><span class="status-pill" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--accent);"><span class="w-1 h-1 rounded-full bg-current animate-pulse"></span>Live</span></div>
+            </div>
+            <div class="chart-wrap"><canvas id="distressChart"></canvas></div>
+          </div>
+        </div>
+
+        <div id="videoMode" class="space-y-5" style="display:none;">
+          <div id="videoSessionArea" class="glass-card p-6">
+            <div class="text-center space-y-6">
+              <div class="flex flex-col items-center gap-4">
+                <div id="videoPreviewWrap" class="video-wrap w-full max-w-2xl mx-auto" style="aspect-ratio: 16/10; display:none;">
+                  <video id="videoPreviewEl" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);"></video>
+                  <div class="video-badge" style="z-index:5;">
+                    <span id="videoRecDot" class="w-2 h-2 rounded-full bg-red-500" style="display:none;"></span>
+                    <span id="videoRecLabel">Preview</span>
+                  </div>
+                </div>
+                <div id="videoPlaceholderArea" class="w-full max-w-2xl mx-auto rounded-2xl flex flex-col items-center justify-center gap-4" style="aspect-ratio:16/10; background: var(--bg-elevated); border: 2px dashed var(--border);">
+                  <svg class="w-16 h-16 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <p class="text-sm" style="color: var(--foreground-muted);">Click below to start recording (max 20 min)</p>
+                </div>
+              </div>
+
+              <div id="videoControls" class="flex flex-wrap items-center justify-center gap-3">
+                <button id="videoPermBtn" onclick="requestVideoPermissions()" class="btn-blue">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  Check Permissions
+                </button>
+                <button id="videoStartBtn" onclick="startVideoRecording()" class="btn-primary" disabled>
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                  Start Recording
+                </button>
+                <button id="videoStopBtn" onclick="stopVideoRecording()" class="btn-secondary" disabled>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                  Stop &amp; Analyze
+                </button>
+              </div>
+
+              <div id="videoTimerWrap" class="flex items-center justify-center gap-4" style="display:none;">
+                <div id="videoRecIndicator" class="rec-indicator idle">
+                  <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>REC
+                </div>
+                <span id="videoTimer" class="font-mono-data text-2xl font-bold" style="color: var(--foreground);">00:00 / 20:00</span>
+              </div>
+
+              <div id="videoProcessing" style="display:none;" class="w-full max-w-2xl mx-auto">
+                <div class="glass-card p-8 text-center relative overflow-hidden">
+                  <div class="spinner mx-auto mb-4"></div>
+                  <p class="text-sm font-semibold" style="color: var(--foreground);">Processing video session...</p>
+                  <p id="videoProcessingStep" class="text-xs mt-2" style="color: var(--foreground-muted);">Uploading video</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="videoResults" style="display:none;" class="space-y-5">
+            <div class="section-title">Session Results</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="result-card">
+                <div class="result-label">Facial Emotion (FER)</div>
+                <div id="resultFer" class="result-value" style="color: #4ADE80;">--</div>
+                <div id="resultFerDetails" class="text-xs mt-1" style="color: var(--foreground-muted);"></div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">Voice Emotion (SER)</div>
+                <div id="resultSer" class="result-value" style="color: #22D3EE;">--</div>
+                <div id="resultSerDetails" class="text-xs mt-1" style="color: var(--foreground-muted);"></div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">Distress Level</div>
+                <div id="resultDistress" class="result-value" style="color: var(--accent);">--</div>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <div class="result-label">Transcribed Speech</div>
+              <div id="resultStt" class="text-sm mt-2 leading-relaxed" style="color: var(--foreground);">--</div>
+            </div>
+
+            <div class="therapist-wrap">
+              <div class="text-center space-y-3 relative z-10">
+                <div class="flex items-center justify-center gap-2">
                   <svg class="w-4 h-4" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                  <span class="text-xs font-bold uppercase tracking-[0.2em]" style="color: var(--accent);">AI Therapist</span>
+                  <span class="text-xs font-bold uppercase tracking-[0.2em]" style="color: var(--accent);">AI Therapist Response</span>
                 </div>
-                <div id="emotionTag" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: #FBBF24;">
-                  <span id="emotionEmoji">💤</span>
-                  <span>Idle</span>
-                </div>
-              </div>
-
-              <div id="recommendationText" class="text-base font-medium leading-relaxed" style="color: var(--foreground);">
-                Start a session to begin monitoring your emotional state.
-              </div>
-
-              <div id="sttText" class="text-sm font-medium leading-relaxed hidden" style="color: var(--cyan);">
-                🎤 <span id="sttContent"></span>
-              </div>
-
-              <!-- Distress Gauge -->
-              <div class="gauge-wrap">
-                <svg viewBox="0 0 130 130" class="w-full h-full">
-                  <circle class="gauge-bg" cx="65" cy="65" r="58"/>
-                  <circle id="gaugeFill" class="gauge-fill" cx="65" cy="65" r="58"
-                    stroke-dasharray="364.42" stroke-dashoffset="364.42" stroke="var(--accent)"/>
-                </svg>
-                <div class="gauge-center">
-                  <span id="distressValue" class="font-mono-data text-3xl font-bold" style="color: var(--foreground);">0</span>
-                  <span class="gauge-label">Distress</span>
-                </div>
-              </div>
-
-              <!-- Controls -->
-              <div class="flex gap-3 pt-2">
-                <button onclick="startSession()" id="btnStart" class="btn-primary flex-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Start Session
-                </button>
-                <button onclick="stopSession()" id="btnStop" class="btn-secondary flex-1" disabled>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
-                  Stop
-                </button>
-              </div>
-
-              <div id="sessionStatus" class="text-xs" style="color: var(--foreground-muted);">
-                Press Start to begin monitoring
+                <div id="resultLlm" class="text-base font-medium leading-relaxed" style="color: var(--foreground);">--</div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Metrics Row -->
-        <div class="animate-in delay-3">
-          <div class="section-title">Live Metrics</div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="glass-card metric-box">
-              <div class="metric-header">
-                <div class="metric-title">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  Video Emotion
-                </div>
-                <span id="trendVideo" class="metric-trend stable">●</span>
-              </div>
-              <div id="metricVideo" class="metric-data">Idle</div>
-              <canvas id="sparkVideo" class="metric-sparkline" width="200" height="28"></canvas>
+            <div class="text-center">
+              <button onclick="resetVideoSession()" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Record Another Video
+              </button>
             </div>
-
-            <div class="glass-card metric-box">
-              <div class="metric-header">
-                <div class="metric-title">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                  Voice Emotion
-                </div>
-                <span id="trendVoice" class="metric-trend stable">●</span>
-              </div>
-              <div id="metricVoice" class="metric-data">Idle</div>
-              <canvas id="sparkVoice" class="metric-sparkline" width="200" height="28"></canvas>
-            </div>
-
-            <div class="glass-card metric-box">
-              <div class="metric-header">
-                <div class="metric-title">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                  Biometrics
-                </div>
-                <span id="trendBio" class="metric-trend stable">●</span>
-              </div>
-              <div id="metricBio" class="metric-data">Idle</div>
-              <canvas id="sparkBio" class="metric-sparkline" width="200" height="28"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Chart -->
-        <div class="animate-in delay-4 glass-card p-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <div>
-              <h3 class="text-sm font-semibold text-white">Distress Trend</h3>
-              <p class="text-xs mt-0.5" style="color: var(--foreground-muted);">Real-time monitoring • Last 50 data points</p>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full" style="background: var(--accent);"></span>
-                <span class="text-xs" style="color: var(--foreground-muted);">Distress</span>
-              </div>
-              <span class="status-pill" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--accent);">
-                <span class="w-1 h-1 rounded-full bg-current animate-pulse"></span>
-                Live
-              </span>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="distressChart"></canvas>
           </div>
         </div>
 
       </div>
     </main>
 
-    <!-- Right Sidebar - Session History -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="flex items-center justify-between">
@@ -798,9 +370,7 @@
           <span id="historyCount" class="font-mono-data text-xs px-2 py-1 rounded-md" style="background: var(--surface); color: var(--foreground-muted);">0</span>
         </div>
       </div>
-
       <div class="sidebar-content" id="sidebarContent">
-        <!-- Event items injected here -->
         <div class="text-center py-12" style="color: var(--foreground-muted);">
           <svg class="w-8 h-8 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <p class="text-xs">No events yet</p>
@@ -808,7 +378,6 @@
         </div>
       </div>
     </aside>
-
   </div>
 
   <script src="/static/js/app.js"></script>

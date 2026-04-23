@@ -1,0 +1,13 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-04-23T01:24:03.931940,No Face Detected,Starting...,"HR: 67.9, EDA: 61.1",20,"I'm here with you, and I can see you're taking a moment to start, would you like to share what's on your mind when you're ready?",
+2026-04-23T01:24:09.673073,Drowsiness,Sad,"HR: 69.8, EDA: 70.9",60,"I sense that you're feeling sad, and I'm here with you, even if you're not ready to talk about it yet, I'm listening and here to support you.",
+2026-04-23T01:24:15.300899,Drowsiness,Fear,"HR: 67.4, EDA: 66.5",60,"I can see that you seem a bit drowsy, but I sense some fear behind that, I'm here with you and want to help you work through whatever is troubling you, even if it's hard to put into words right now.",
+2026-04-23T01:24:20.773537,neutral,Happy,"HR: 71.9, EDA: 68.6",60,"I sense that you're feeling a bit anxious, and I'm here with you, ready to listen and support you when you're ready to talk.",
+2026-04-23T01:24:26.461015,Drowsiness,Happy,"HR: 75.6, EDA: 54.0",5,"I can see you're feeling positive and engaged, and I'm here with you, ready to support you in this happy moment.",
+2026-04-23T01:24:31.929736,neutral,Calm,"HR: 73.1, EDA: 56.2",5,"I'm here with you, and I sense a calm atmosphere, allowing us to start our conversation at a peaceful pace.",
+2026-04-23T01:24:37.419232,neutral,Happy,"HR: 77.0, EDA: 52.1",5,"I can see you're nodding along, and your voice sounds happy, I'm here with you, feeling a sense of calm and positivity in this moment.",
+2026-04-23T01:24:43.005814,neutral,Calm,"HR: 72.2, EDA: 54.0",5,"I'm here with you, and I sense a calm atmosphere, allowing us to start our conversation at a gentle pace.",
+2026-04-23T01:24:48.497644,angry,Sad,"HR: 78.5, EDA: 47.2",80,"I can see that you're feeling a mix of emotions, with anger on your face and sadness in your voice, and I'm here with you, ready to listen and support you when you're ready to talk.",
+2026-04-23T01:24:53.941227,sad,Surprised,"HR: 81.8, EDA: 44.0",20,"I can see you're nodding, and your voice sounds surprised, I'm here with you, and I'm curious, would you like to share what's on your mind?",
+2026-04-23T01:24:59.523136,sad,Surprised,"HR: 78.6, EDA: 25.6",60,"I can see that you're feeling sad right now, and I'm here with you, even if you're not ready to talk about it just yet.",
+2026-04-23T01:25:05.108827,sad,Fear,"HR: 81.0, EDA: 18.9",80,"I can see you're feeling overwhelmed and I'm here with you, it's okay to feel scared and sad, would you like to talk about what's on your mind?",

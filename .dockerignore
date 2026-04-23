@@ -8,9 +8,17 @@ env/
 venv/
 ENV/
 
+# Large archives
+*.tar
+*.tar.gz
+*.zip
+aib.tar
+
 # Data
 data/raw/*
 data/processed/*
+data/sessions/*
+data/video_sessions/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 

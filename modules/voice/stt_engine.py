@@ -31,7 +31,7 @@ class STTEngine:
             if audio_np.max() > 1.0 or audio_np.min() < -1.0:
                 audio_np = audio_np / 32768.0
 
-            segments, _ = self.model.transcribe(audio_np, sample_rate=sr, language="en", condition_on_previous_text=False)
+            segments, _ = self.model.transcribe(audio_np, language="en", condition_on_previous_text=False)
             text = " ".join([seg.text for seg in segments]).strip()
             return text
         except Exception as e:

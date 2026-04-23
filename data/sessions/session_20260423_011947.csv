@@ -1,0 +1,6 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-04-23T01:19:48.786958,No Frame,Idle,"HR: 69.2, EDA: 98.0",60,"I'm here with you, and I sense that something might be bothering you, even if you're not ready to talk about it yet, I'm here to listen when you are.",
+2026-04-23T01:19:54.371118,angry,Idle,"HR: 70.9, EDA: 72.1",10,"I can see you're nodding, and I'm here with you, waiting for you to share your thoughts whenever you're ready.",
+2026-04-23T01:19:59.942805,angry,Idle,"HR: 70.4, EDA: 86.6",60,"I can see that you're feeling angry, and I'm here with you, ready to listen and support you when you're ready to talk.",
+2026-04-23T01:20:05.617410,neutral,Sad,"HR: 69.6, EDA: 89.9",60,"I sense that you're feeling sad, even if you're not saying anything right now, and I'm here with you, ready to listen when you're ready to talk.",
+2026-04-23T01:20:11.229478,neutral,Sad,"HR: 67.3, EDA: 64.5",60,"I sense that you're feeling a bit down, and I'm here with you, ready to listen when you're ready to talk, even if it's just about how you're feeling in this moment.",

@@ -1,0 +1,7 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-04-23T02:59:28.413487,No Frame,Idle,"HR: 69.4, EDA: 95.7",0,"I'm here with you, and I'm ready to listen when you're ready to talk, take your time and feel comfortable starting our conversation.",
+2026-04-23T02:59:34.019036,Unknown,Fear,"HR: 67.9, EDA: 91.4",80,"I can sense your fear, and I'm here with you, even if you're not ready to talk, I'm listening and here to support you.",
+2026-04-23T02:59:39.605925,Sad,Sad,"HR: 70.7, EDA: 101.7",80,"I can see you're feeling quite sad right now, and I'm here with you, offering a supportive and non-judgmental space to explore your emotions.",
+2026-04-23T02:59:45.284487,Unknown,Sad,"HR: 68.5, EDA: 104.0",60,"I can sense that you're feeling sad, and I'm here with you, ready to listen when you're ready to talk, taking a moment to breathe together might help.",
+2026-04-23T02:59:50.852660,Unknown,Sad,"HR: 73.1, EDA: 105.4",60,"I can sense that you're feeling sad, and I'm here with you, ready to listen and support you when you're ready to talk.",
+2026-04-23T02:59:56.287761,Head Nodding,Sad,"HR: 74.5, EDA: 113.7",60,"I can sense that you're feeling sad, and I'm here with you, ready to listen and support you when you're ready to talk.",

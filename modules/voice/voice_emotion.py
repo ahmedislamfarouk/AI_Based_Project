@@ -1,4 +1,3 @@
-import pyaudio
 import numpy as np
 import time
 import threading
@@ -15,12 +14,15 @@ class VoiceEmotionAnalyzer:
         self.stream = None
         self.audio_available = False
 
-        # Ring buffer for audio (10 seconds)
         self.buffer_lock = threading.Lock()
         self.audio_buffer = np.zeros(self.rate * 10, dtype=np.float32)
         self.buffer_pos = 0
 
-        # STT speech segment buffer
+        self.browser_audio_lock = threading.Lock()
+        self.browser_audio_buffer = np.zeros(self.rate * 10, dtype=np.float32)
+        self.browser_audio_pos = 0
+        self.browser_audio_written = 0
+
         self.speech_buffer = []
         self.is_speaking = False
         self.silence_chunks = 0
@@ -32,15 +34,17 @@ class VoiceEmotionAnalyzer:
         self.latest_emotion = "Idle"
         self.transcript_lock = threading.Lock()
 
-        # Models
         self.ser = SERInference()
-        self.stt = STTEngine(model_size="tiny", device="cuda")
+        import torch
+        stt_device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.stt = STTEngine(model_size="tiny", device=stt_device)
 
         self._running = False
         self._capture_thread = None
         self._stt_thread = None
 
         try:
+            import pyaudio
             self.p = pyaudio.PyAudio()
             self.stream = self.p.open(format=pyaudio.paInt16,
                                       channels=1,
@@ -56,9 +60,11 @@ class VoiceEmotionAnalyzer:
             self._stt_thread.start()
         except Exception as e:
             print(f"[Voice] Audio device not available: {e}")
-            print("[Voice] Running in MOCK mode")
+            print("[Voice] Running in browser-audio mode. Send audio via /api/browser-audio.")
             self.audio_available = False
-            self._mock_frame = 0
+            self._running = True
+            self._stt_thread = threading.Thread(target=self._stt_loop, daemon=True)
+            self._stt_thread.start()
 
     def _audio_capture_loop(self):
         while self._running:
@@ -99,7 +105,6 @@ class VoiceEmotionAnalyzer:
 
                 if self.is_speaking:
                     self.speech_buffer.append(audio_chunk.copy())
-                    # Force process if speech exceeds 15 seconds
                     total_speech_samples = sum(len(c) for c in self.speech_buffer)
                     if total_speech_samples > self.rate * 15:
                         self.is_speaking = False
@@ -108,6 +113,21 @@ class VoiceEmotionAnalyzer:
             except Exception as e:
                 print(f"[Voice] Capture error: {e}")
                 time.sleep(0.1)
+
+    def feed_browser_audio(self, audio_np):
+        if audio_np is None or len(audio_np) == 0:
+            return
+        with self.browser_audio_lock:
+            n = len(audio_np)
+            if self.browser_audio_pos + n > len(self.browser_audio_buffer):
+                overflow = (self.browser_audio_pos + n) - len(self.browser_audio_buffer)
+                self.browser_audio_buffer[self.browser_audio_pos:] = audio_np[:n - overflow]
+                self.browser_audio_buffer[:overflow] = audio_np[n - overflow:]
+                self.browser_audio_pos = overflow
+            else:
+                self.browser_audio_buffer[self.browser_audio_pos:self.browser_audio_pos + n] = audio_np
+                self.browser_audio_pos += n
+            self.browser_audio_written += n
 
     def _process_speech_segment(self):
         if not self.speech_buffer:
@@ -126,26 +146,44 @@ class VoiceEmotionAnalyzer:
         while self._running:
             time.sleep(2.0)
 
-    def analyze_audio(self):
-        if not self.audio_available:
-            self._mock_frame += 1
-            mock_patterns = ["Neutral", "Neutral", "Happy", "Neutral", "Neutral"]
-            return mock_patterns[self._mock_frame % len(mock_patterns)]
-
-        try:
+    def _get_audio_segment(self):
+        src = "mic"
+        segment = None
+        if self.audio_available:
             with self.buffer_lock:
                 end = self.buffer_pos
                 start = (end - NUM_SAMPLES) % len(self.audio_buffer)
                 if start < end:
-                    segment = self.audio_buffer[start:end]
+                    segment = self.audio_buffer[start:end].copy()
                 else:
-                    segment = np.concatenate([self.audio_buffer[start:], self.audio_buffer[:end]])
+                    segment = np.concatenate([self.audio_buffer[start:], self.audio_buffer[:end]]).copy()
+            src = "mic"
+        with self.browser_audio_lock:
+            if self.browser_audio_written > NUM_SAMPLES * 0.5:
+                end = self.browser_audio_pos
+                start = (end - NUM_SAMPLES) % len(self.browser_audio_buffer)
+                if start < end:
+                    browser_seg = self.browser_audio_buffer[start:end].copy()
+                else:
+                    browser_seg = np.concatenate([self.browser_audio_buffer[start:], self.browser_audio_buffer[:end]]).copy()
+                if segment is None or self.browser_audio_written > self.rate * 2:
+                    segment = browser_seg
+                    src = "browser"
+        return segment, src
 
-            if len(segment) < NUM_SAMPLES * 0.8:
-                return self.latest_emotion
+    def analyze_audio(self):
+        if self.ser.model is None and self.ser.feature_extractor is None:
+            return self.latest_emotion if self.latest_emotion != "Idle" else "Neutral"
 
-            emotion = self.ser.predict(segment, sr=self.rate)
-            if emotion and emotion not in ["Unavailable", "Error"]:
+        segment, src = self._get_audio_segment()
+        if segment is None or len(segment) < NUM_SAMPLES * 0.3:
+            return self.latest_emotion
+
+        try:
+            result = self.ser.predict(segment, sr=self.rate)
+            emotion = result[0] if isinstance(result, tuple) else result
+            confidence = result[1] if isinstance(result, tuple) and len(result) > 1 else 1.0
+            if emotion and emotion not in ["Unavailable", "Error"] and confidence >= 0.25:
                 self.latest_emotion = emotion
             return self.latest_emotion
         except Exception as e:
