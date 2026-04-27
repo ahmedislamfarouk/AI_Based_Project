@@ -74,8 +74,8 @@ async function initBrowserCamera() {
     browserVideo.playsInline = true;
     browserVideo.srcObject = browserStream;
     browserCanvas = document.createElement('canvas');
-    browserCanvas.width = 640;
-    browserCanvas.height = 480;
+    browserCanvas.width = 480;
+    browserCanvas.height = 360;
     await browserVideo.play();
     return true;
   } catch (err) {
@@ -94,17 +94,18 @@ function stopBrowserCamera() {
 
 function startFrameUploadLoop() {
   if (frameUploadTimer) return;
-  frameUploadTimer = setInterval(captureAndSendFrame, 250);
+  frameUploadTimer = setInterval(captureAndSendFrame, 100);
 }
 
 async function captureAndSendFrame() {
-  if (!isRunning || !browserVideo || !browserCanvas || frameUploadInFlight) return;
+  if (frameUploadInFlight) return;
+  if (!isRunning || !browserVideo || !browserCanvas) return;
   if (browserVideo.readyState < 2) return;
-  const ctx = browserCanvas.getContext('2d');
-  if (!ctx) return;
-  ctx.drawImage(browserVideo, 0, 0, browserCanvas.width, browserCanvas.height);
   frameUploadInFlight = true;
   try {
+    const ctx = browserCanvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(browserVideo, 0, 0, browserCanvas.width, browserCanvas.height);
     const blob = await new Promise((resolve) => browserCanvas.toBlob(resolve, 'image/jpeg', 0.75));
     if (!blob) return;
     const formData = new FormData();

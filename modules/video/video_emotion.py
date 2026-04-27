@@ -7,29 +7,30 @@ import os
 import numpy as np
 
 FACE_ANALYSIS_URL = os.environ.get("FACE_ANALYSIS_URL", "http://127.0.0.1:8001")
-_REQUEST_TIMEOUT = 3
+_REQUEST_TIMEOUT = 2
 
 
 class VideoEmotionAnalyzer:
-    def __init__(self, cap=None, open_default=True):
+    def __init__(self, cap=None, open_default=True, fast_mode=False):
         self.own_cap = cap is None and open_default
         self.cap = cap if cap is not None else (cv2.VideoCapture(0) if open_default else None)
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.last_emotion = "Neutral"
+        self.fast_mode = fast_mode
         self._deepface_available = None
         self._last_deepface_time = 0
-        self._deepface_interval = 1.5
+        self._deepface_interval = 2.0
         self._deepface_lock = threading.Lock()
         self._face_service_available = None
         self._face_service_check_time = 0
-        self._face_service_interval = 30
+        self._face_service_interval = 10
 
     def _check_face_service(self):
         now = time.time()
         if self._face_service_available is not None and (now - self._face_service_check_time) < self._face_service_interval:
             return self._face_service_available
         try:
-            resp = requests.get(f"{FACE_ANALYSIS_URL}/health", timeout=2)
+            resp = requests.get(f"{FACE_ANALYSIS_URL}/health", timeout=1)
             if resp.status_code == 200:
                 self._face_service_available = True
                 self._face_service_check_time = now
@@ -78,6 +79,11 @@ class VideoEmotionAnalyzer:
         min_face_ratio = 0.05
         if (w / frame.shape[1]) < min_face_ratio:
             self.last_emotion = "No Face Detected"
+            return self.last_emotion
+
+        if self.fast_mode:
+            face_ratio = w / frame.shape[1]
+            self.last_emotion = "Anxious" if face_ratio > 0.4 else "Calm"
             return self.last_emotion
 
         margin = 30
