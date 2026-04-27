@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "Emotion Detection"))
 
 from modules.video.video_emotion import VideoEmotionAnalyzer
+from modules.video.cv_detector import detect_and_annotate
 from modules.voice.voice_emotion import VoiceEmotionAnalyzer
 from modules.biometrics.heart_rate_processor import BiometricProcessor
 from core.model.inference import FusionAgent
@@ -109,9 +110,12 @@ if CAMERA_SOURCE == "device":
 else:
     print("[Startup] Browser camera mode enabled. Waiting for /api/browser-frame input.")
 
-video_analyzer = VideoEmotionAnalyzer(cap=cap, open_default=False)
+video_analyzer = VideoEmotionAnalyzer(cap=cap, open_default=False, fast_mode=True)
 voice_analyzer = VoiceEmotionAnalyzer()
-biometric_processor = BiometricProcessor()
+
+BIOMETRIC_SOURCE = os.getenv("BIOMETRIC_SOURCE", "auto").strip()
+biometric_processor = BiometricProcessor(source=BIOMETRIC_SOURCE)
+
 fusion_agent = FusionAgent()
 tts_engine = TTSEngine()
 video_processor = VideoSessionProcessor()
@@ -149,16 +153,7 @@ def frame_reader():
 
 
 def video_worker():
-    global latest_display_frame, system_state
-    face_mesh = None
-    if REAL_MODEL_AVAILABLE:
-        try:
-            face_mesh = get_face_mesh()
-            print("[VideoWorker] DeepFace FaceMesh initialized in worker thread.")
-        except Exception as e:
-            print(f"[VideoWorker] Failed to init FaceMesh: {e}")
-            face_mesh = None
-
+    global system_state
     while True:
         if not running:
             time.sleep(0.5)
@@ -166,27 +161,54 @@ def video_worker():
         with frame_lock:
             frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
         if frame is not None:
-            if REAL_MODEL_AVAILABLE and face_mesh is not None:
-                try:
-                    annotated, states = analyze_faces_and_draw(frame, face_mesh)
-                    current_state = states[0] if states else "No Face Detected"
-                except Exception as e:
-                    print(f"[VideoWorker] Advanced model error: {e}")
-                    annotated = frame.copy()
-                    current_state = video_analyzer.analyze_frame_given(frame) if video_analyzer else "No Camera"
-            else:
-                current_state = video_analyzer.analyze_frame_given(frame) if video_analyzer else "No Camera"
-                annotated = frame.copy()
-                if current_state != "No Frame":
-                    cv2.putText(annotated, current_state, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-            with frame_lock:
-                latest_display_frame = annotated
+            current_state = video_analyzer.analyze_frame_given(frame) if video_analyzer else "No Camera"
             with state_lock:
                 system_state["video_emotion"] = current_state
         else:
             with state_lock:
                 system_state["video_emotion"] = "No Frame"
         time.sleep(0.5)
+
+
+def display_worker():
+    global latest_display_frame
+    face_mesh = None
+    if REAL_MODEL_AVAILABLE:
+        try:
+            face_mesh = get_face_mesh()
+            print("[DisplayWorker] FaceMesh initialized for fast display overlay.")
+        except Exception as e:
+            print(f"[DisplayWorker] Failed to init FaceMesh: {e}")
+            face_mesh = None
+
+    while True:
+        if not running:
+            time.sleep(0.1)
+            continue
+
+        with frame_lock:
+            frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
+
+        if frame is not None:
+            annotated = frame.copy()
+            try:
+                emotion_text = ""
+                with state_lock:
+                    emotion_text = system_state.get("video_emotion", "")
+                annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
+            except Exception:
+                pass
+
+            if REAL_MODEL_AVAILABLE and face_mesh is not None:
+                try:
+                    annotated, _ = analyze_faces_and_draw(annotated, face_mesh)
+                except Exception:
+                    pass
+
+            with frame_lock:
+                latest_display_frame = annotated
+
+        time.sleep(0.033)
 
 
 def voice_worker():
@@ -263,7 +285,7 @@ def ai_fusion_worker():
         time.sleep(5)
 
 
-for target in [frame_reader, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
+for target in [frame_reader, display_worker, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
     threading.Thread(target=target, daemon=True).start()
 
 

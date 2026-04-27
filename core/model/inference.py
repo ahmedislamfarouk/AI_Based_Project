@@ -45,7 +45,7 @@ class FusionAgent:
         PRIMARY: Groq API (fast, no local GPU needed).
         FALLBACK: Local Gemma GGUF + FAISS RAG (if Groq key missing).
         """
-        self.api_key = "d"
+        self.api_key = os.environ.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
         self.llm = None
         self._local_llm = None
         self._index = None

@@ -46,7 +46,9 @@ def voice_worker():
 
 def biometric_worker():
     global system_state
-    processor = BiometricProcessor()
+    import os
+    source = os.getenv("BIOMETRIC_SOURCE", "auto").strip()
+    processor = BiometricProcessor(source=source)
     print("[Thread] Biometric Modality Started")
     try:
         while True:
