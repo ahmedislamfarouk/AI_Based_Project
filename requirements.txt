@@ -22,8 +22,9 @@ librosa
 pyttsx3
 streamlit
 requests
+openai
 deepface
-mediapipe==0.10.9
+tensorflow-cpu
 tf-keras
 gdown
 fastapi

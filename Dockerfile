@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_DEFAULT_TIMEOUT=120
+    PIP_DEFAULT_TIMEOUT=600
 
 RUN apt-get update && apt-get install -y \
     python3.11 python3.11-venv python3-pip python3.11-dev \
