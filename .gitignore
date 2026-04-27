@@ -12,6 +12,7 @@ venv/
 env/
 .venv/
 .env
+*.pth
 *.egg-info/
 dist/
 build/

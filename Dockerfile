@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y \
     libpulse-dev \
     libasound2-dev \
     libusb-1.0-0 \
+    i2c-tools \
+    libi2c-dev \
     ffmpeg \
     gcc \
     g++ \

@@ -36,3 +36,4 @@ transformers
 faster-whisper
 ctranslate2
 soundfile
+smbus2
