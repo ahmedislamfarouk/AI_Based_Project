@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_DEFAULT_TIMEOUT=600
+    PIP_DEFAULT_TIMEOUT=120 \
+    PIP_RETRIES=5
 
 RUN apt-get update && apt-get install -y \
     python3.11 python3.11-venv python3-pip python3.11-dev \
@@ -42,12 +43,15 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 &
 
 COPY requirements.txt .
 
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    python -m pip install --no-cache-dir \
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+RUN python -m pip install \
         torch torchvision torchaudio \
-        --index-url https://download.pytorch.org/whl/cu121 && \
-    python -m pip install --no-cache-dir --prefer-binary -r requirements.txt && \
-    python -m pip install --no-cache-dir --prefer-binary safetensors
+        --index-url https://download.pytorch.org/whl/cu121
+
+RUN python -m pip install --no-cache-dir --prefer-binary -r requirements.txt
+
+RUN python -m pip install --no-cache-dir --prefer-binary safetensors
 
 # Patch transformers to bypass torch<2.6 security check (safe for trusted model files)
 COPY scripts/patch_transformers.py /tmp/patch_transformers.py
