@@ -25,5 +25,9 @@ if __name__ == "__main__":
     print("\nNext: Audio Test. It will record 3 seconds and then play it back.")
     input("Press Enter to continue...")
     run_test("Audio Test", os.path.join(base_path, "test_audio.py"))
-    
+
+    print("\nNext: MAX30102 Sensor Test. Prints HR, SpO2, and raw IR/RED values.")
+    input("Press Enter to continue...")
+    run_test("MAX30102 Sensor Test", os.path.join(base_path, "test_max30102.py"))
+
     print("\nAll tests completed.")
