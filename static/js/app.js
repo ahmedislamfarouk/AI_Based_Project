@@ -420,11 +420,6 @@ function updateUI(data) {
     if (avDist) { avDist.textContent = distress; }
   }
 }
-    } else {
-      ttsCtrl.classList.add('hidden');
-    }
-  }
-}
 
 // ========== LIVE MODE ==========
 
@@ -467,7 +462,6 @@ function switchMode(mode) {
   document.getElementById('modeVideoBtn').classList.toggle('active', mode === 'video');
   document.getElementById('modeAvatarBtn').classList.toggle('active', mode === 'avatar');
   if (mode === 'avatar') { initAvatar(); }
-}
 }
 
 async function requestVideoPermissions() {
