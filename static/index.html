@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Multimodal AI Monitor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -190,20 +189,17 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in delay-2">
             <div id="videoContainer" class="video-wrap" style="aspect-ratio: 16/10;">
-              <img id="videoFeed" src="/video_feed" alt="Live Feed" onerror="handleVideoError(this)">
+              <img id="videoFeed" alt="Live Feed" style="display:none;">
+              <div id="videoPlaceholder" class="absolute inset-0 flex items-center justify-center" style="background: var(--bg-elevated);">
+                <div class="text-center" style="color: var(--foreground-muted);">
+                  <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <p class="text-sm font-medium">Click Start to begin camera</p>
+                </div>
+              </div>
               <div class="video-overlay-bottom"></div>
               <div class="video-badge">
                 <span id="camDot" class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                 <span id="camStatus">Idle</span>
-              </div>
-              <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-              </button>
-              <div id="videoPlaceholder" class="hidden absolute inset-0 flex items-center justify-center" style="background: var(--bg-elevated);">
-                <div class="text-center" style="color: var(--foreground-muted);">
-                  <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                  <p class="text-sm font-medium">Camera feed unavailable</p>
-                </div>
               </div>
             </div>
 
@@ -445,5 +441,12 @@
   </div>
 
   <script src="/static/js/app.js"></script>
+  <script>
+    var tw = document.createElement('script');
+    tw.src = 'https://cdn.tailwindcss.com';
+    tw.onerror = function() { document.body.style.opacity = '1'; };
+    document.head.appendChild(tw);
+    setTimeout(function() { document.body.style.opacity = '1'; }, 3000);
+  </script>
 </body>
 </html>

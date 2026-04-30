@@ -57,10 +57,6 @@ const emotionColors = {
   'Error': { bg: 'rgba(239, 68, 68, 0.12)', text: '#F87171' },
 };
 
-function handleVideoError(img) {
-  console.log('[Video] feed error, will retry on session start');
-}
-
 function toggleFullscreen() {
   document.getElementById('videoContainer').classList.toggle('fullscreen');
 }
