@@ -10,6 +10,7 @@ import tempfile
 import typing
 import uuid
 from datetime import datetime
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -25,7 +26,7 @@ from modules.video.cv_detector import detect_and_annotate
 from modules.voice.voice_emotion import VoiceEmotionAnalyzer
 from modules.biometrics.heart_rate_processor import BiometricProcessor
 from core.model.inference import FusionAgent
-from modules.output.tts_engine import TTSEngine
+from modules.output.tts_engine import TTSEngine, TTS_BACKEND
 from modules.output.session_logger import SessionLogger
 from modules.video.video_processor import VideoSessionProcessor
 
@@ -88,7 +89,14 @@ system_state = {
     "stt_text": "",
     "llm_response": "Start a session to begin monitoring.",
     "distress": 0,
+    "tts_audio_url": None,
+    "tts_audio_mime": "audio/wav",
+    "tts_audio_b64": None,
+    "tts_generating": False,
 }
+
+TTS_OUTPUT_DIR = Path(os.path.join(os.path.dirname(__file__), "data", "tts"))
+TTS_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 running = False
 current_logger = None
 
@@ -127,6 +135,20 @@ video_session_results = {}
 video_session_lock = threading.Lock()
 
 
+def _find_latest_tts_file():
+    candidates = list(TTS_OUTPUT_DIR.glob("latest.*"))
+    return candidates[0] if candidates else None
+
+
+def _cleanup_old_tts(max_files=20):
+    try:
+        files = sorted(TTS_OUTPUT_DIR.glob("response_*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for old in files[max_files:]:
+            old.unlink(missing_ok=True)
+    except Exception:
+        pass
+
+
 def get_state_payload():
     with state_lock:
         return {
@@ -137,6 +159,10 @@ def get_state_payload():
             "stt_text": system_state["stt_text"],
             "llm_response": system_state["llm_response"],
             "distress": system_state["distress"],
+            "tts_audio_url": system_state["tts_audio_url"],
+            "tts_audio_mime": system_state["tts_audio_mime"],
+            "tts_audio_b64": system_state["tts_audio_b64"],
+            "tts_generating": system_state["tts_generating"],
         }
 
 
@@ -191,17 +217,22 @@ def display_worker():
 
         if frame is not None:
             annotated = frame.copy()
-            try:
-                emotion_text = ""
-                with state_lock:
-                    emotion_text = system_state.get("video_emotion", "")
-                annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
-            except Exception:
-                pass
+            emotion_text = ""
+            with state_lock:
+                emotion_text = system_state.get("video_emotion", "")
 
             if REAL_MODEL_AVAILABLE and face_mesh is not None:
                 try:
-                    annotated, _ = analyze_faces_and_draw(annotated, face_mesh)
+                    from EmotionDetection import draw_face_mesh_fast
+                    annotated = draw_face_mesh_fast(annotated, face_mesh, emotion_text)
+                except Exception:
+                    try:
+                        annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
+                    except Exception:
+                        pass
+            else:
+                try:
+                    annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
                 except Exception:
                     pass
 
@@ -242,10 +273,27 @@ def biometric_worker():
         time.sleep(1.0)
 
 
+def _on_tts_done(filepath, mime_type, audio_b64):
+    """Callback fired when Gemini TTS finishes generating audio."""
+    with state_lock:
+        if audio_b64:
+            system_state["tts_audio_b64"] = audio_b64
+            system_state["tts_audio_mime"] = mime_type
+            system_state["tts_audio_url"] = f"/api/tts/latest?t={int(time.time())}"
+            print(f"[TTS Callback] Audio ready: {mime_type}, b64_len={len(audio_b64)}")
+        else:
+            system_state["tts_audio_b64"] = None
+        system_state["tts_generating"] = False
+
+
 def ai_fusion_worker():
     global system_state, current_logger
     last_recommendation = ""
     last_stt = ""
+    last_tts_time = 0
+    tts_repeat_interval = 15  # retrigger same msg every 15s
+    # Distress threshold: 0 = always speak, 40 = only when distressed
+    tts_distress_threshold = int(os.getenv("TTS_DISTRESS_THRESHOLD", "0"))
     while True:
         if not running:
             time.sleep(1)
@@ -273,16 +321,29 @@ def ai_fusion_worker():
             if current_logger:
                 current_logger.log_event(system_state)
 
-            if response and response != last_recommendation and distress >= 40:
-                tts_engine.speak(response)
+            now = time.time()
+            response_changed = response != last_recommendation
+            repeat_due = (now - last_tts_time) > tts_repeat_interval
+
+            if response and distress >= tts_distress_threshold and (response_changed or repeat_due):
+                with state_lock:
+                    system_state["tts_generating"] = True
+                    system_state["tts_audio_url"] = None
+                    system_state["tts_audio_b64"] = None
+                print(f"[AI Fusion] Triggering TTS for distress={distress}: {response[:80]}...")
+                tts_engine.speak(response, on_done=_on_tts_done)
                 last_recommendation = response
+                last_tts_time = now
+                _cleanup_old_tts()
 
             if stt_text and stt_text != last_stt:
                 last_stt = stt_text
 
         except Exception as e:
             print(f"[AI Fusion] Error: {e}")
-        time.sleep(5)
+            import traceback
+            traceback.print_exc()
+        time.sleep(3)
 
 
 for target in [frame_reader, display_worker, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
@@ -307,11 +368,48 @@ def process_video_in_thread(session_id, video_path):
         if not isinstance(fusion_result, dict):
             fusion_result = {"distress": 50, "response": str(fusion_result)}
 
-        results["llm_distress"] = fusion_result.get("distress", 0)
-        results["llm_response"] = fusion_result.get("response", "I'm here with you.")
+        distress = fusion_result.get("distress", 0)
+        response = fusion_result.get("response", "I'm here with you.")
+        results["llm_distress"] = distress
+        results["llm_response"] = response
         results["status"] = "completed"
 
-        print(f"[VideoSession {session_id}] Completed! Distress={results['llm_distress']}, Response={results['llm_response'][:80]}...")
+        print(f"[VideoSession {session_id}] Completed! Distress={distress}, Response={response[:80]}...")
+
+        # Trigger TTS for video session results too
+        print(f"[VideoSession {session_id}] TTS check: backend={TTS_BACKEND}, has_response={bool(response)}")
+        tts_audio_b64 = None
+        tts_audio_url = None
+        tts_audio_mime = "audio/wav"
+
+        if response and TTS_BACKEND == "gemini":
+            print(f"[VideoSession {session_id}] Triggering TTS SYNC (blocking)...")
+            try:
+                filepath, mime, audio_b64 = tts_engine.generate_sync(response)
+                if filepath:
+                    print(f"[VideoSession {session_id}] TTS SUCCESS: {filepath}")
+                    _on_tts_done(filepath, mime, audio_b64)
+                    tts_audio_b64 = audio_b64
+                    tts_audio_url = f"/api/tts/latest?t={int(time.time())}"
+                    tts_audio_mime = mime
+                else:
+                    print(f"[VideoSession {session_id}] TTS FAILED: generate_sync returned None")
+            except Exception as e:
+                print(f"[VideoSession {session_id}] TTS ERROR: {e}")
+                import traceback
+                traceback.print_exc()
+            _cleanup_old_tts()
+        elif response:
+            print(f"[VideoSession {session_id}] Triggering async TTS...")
+            tts_engine.speak(response, on_done=_on_tts_done)
+            _cleanup_old_tts()
+        else:
+            print(f"[VideoSession {session_id}] Skipping TTS — no response text.")
+
+        # Embed TTS info into video session results so the frontend gets it
+        results["tts_audio_url"] = tts_audio_url
+        results["tts_audio_mime"] = tts_audio_mime
+        results["tts_audio_b64"] = tts_audio_b64
 
         with video_session_lock:
             video_session_results[session_id] = sanitize_for_json(results)
@@ -358,7 +456,68 @@ def stop_session():
         system_state["llm_response"] = "Session stopped. Start again when ready."
         system_state["distress"] = 0
         system_state["stt_text"] = ""
+        system_state["tts_audio_url"] = None
+        system_state["tts_audio_b64"] = None
+        system_state["tts_generating"] = False
     return {"status": "stopped"}
+
+
+@app.get("/api/tts/latest")
+def get_latest_tts():
+    """Serve the most recent AI-generated TTS audio file."""
+    latest = _find_latest_tts_file()
+    if latest is None or not latest.exists():
+        return JSONResponse(content={"status": "not_found"}, status_code=404)
+    mime = "audio/wav"
+    if latest.suffix == ".mp3":
+        mime = "audio/mpeg"
+    elif latest.suffix == ".ogg":
+        mime = "audio/ogg"
+    elif latest.suffix == ".webm":
+        mime = "audio/webm"
+    return FileResponse(str(latest), media_type=mime)
+
+
+@app.post("/api/tts/test")
+def test_tts(text: str = "Hello, I am your AI therapist. How are you feeling today?"):
+    """Manually trigger async TTS for testing purposes."""
+    if not text:
+        return {"status": "error", "message": "No text provided"}
+    print(f"[TTS Test] Triggering async TTS for: {text[:100]}...")
+    tts_engine.speak(text, on_done=_on_tts_done)
+    return {"status": "tts_triggered", "text": text, "backend": TTS_BACKEND}
+
+
+@app.post("/api/tts/debug")
+def debug_tts(text: str = "Hello, I am your AI therapist. How are you feeling today?"):
+    """
+    Synchronous TTS debug endpoint. Blocks until audio is generated.
+    This lets you see every error immediately in the response.
+    """
+    if not text:
+        return {"status": "error", "message": "No text provided"}
+    if TTS_BACKEND != "gemini":
+        return {"status": "error", "message": f"TTS_BACKEND is '{TTS_BACKEND}', set to 'gemini' to test."}
+
+    print(f"[TTS Debug] SYNC generating for: {text[:100]}...")
+    try:
+        filepath, mime, audio_b64 = tts_engine.generate_sync(text)
+        if filepath:
+            _on_tts_done(filepath, mime, audio_b64)
+            return {
+                "status": "success",
+                "filepath": filepath,
+                "mime_type": mime,
+                "audio_base64_length": len(audio_b64) if audio_b64 else 0,
+                "audio_url": "/api/tts/latest",
+            }
+        else:
+            return {"status": "failed", "message": "generate_sync returned None. Check container logs."}
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[TTS Debug] EXCEPTION: {e}\n{tb}")
+        return {"status": "error", "message": str(e), "traceback": tb}
 
 
 @app.post("/api/browser-frame")

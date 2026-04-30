@@ -1,17 +1,10 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import time
 
 # ──────────────────────────────────────────────────────────────────────────────
-# PRIMARY: Groq API-based LLM (fast, reliable)
-# ──────────────────────────────────────────────────────────────────────────────
-from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate
-from dotenv import load_dotenv
-load_dotenv()
-
-# ──────────────────────────────────────────────────────────────────────────────
-# FALLBACK: Local fine-tuned therapist model + FAISS RAG
+# Local fine-tuned therapist model + FAISS RAG  (PRIMARY)
 # ──────────────────────────────────────────────────────────────────────────────
 from pathlib import Path
 from llama_cpp import Llama
@@ -20,8 +13,18 @@ import numpy as np
 import faiss
 import pickle
 
-MODEL_PATH = "/app/LLM/model/therapist-gemma-q4_K_M.gguf"
-INDEX_DIR = "/app/LLM/faiss_index"
+# ──────────────────────────────────────────────────────────────────────────────
+# OPTIONAL FALLBACK: Groq API-based LLM (fast, reliable)
+# ──────────────────────────────────────────────────────────────────────────────
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
+load_dotenv()
+
+# Resolve model path — works both locally and inside Docker
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+MODEL_PATH = str(_PROJECT_ROOT / "LLM" / "model" / "therapist-gemma-q4_K_M.gguf")
+INDEX_DIR = str(_PROJECT_ROOT / "LLM" / "faiss_index")
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 MAX_TOKENS = 256
 CONTEXT_SIZE = 4096
@@ -42,29 +45,40 @@ def _detect_n_gpu_layers():
 class FusionAgent:
     def __init__(self, model="llama-3.3-70b-versatile"):
         """
-        PRIMARY: Groq API (fast, no local GPU needed).
-        FALLBACK: Local Gemma GGUF + FAISS RAG (if Groq key missing).
+        PRIMARY: Local Gemma GGUF + FAISS RAG (default, no API needed).
+        FALLBACK: Groq API (if LLM_MODE=api or local model fails).
+        Set env LLM_MODE=api to force API mode.
         """
+        self.mode = os.getenv("LLM_MODE", "local").strip().lower()
         self.api_key = os.environ.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
-        self.llm = None
-        self._local_llm = None
+        self.llm = None          # Groq API handle
+        self._local_llm = None   # Llama handle
         self._index = None
         self._chunks = None
         self._embed_model = None
         self._rag_available = False
 
-        if self.api_key:
-            try:
-                self.llm = ChatGroq(api_key=self.api_key, model_name=model, max_tokens=512)
-                print("[FusionAgent] Groq API initialized (PRIMARY).")
-            except Exception as e:
-                print(f"[FusionAgent] Groq init failed: {e}")
-                self.llm = None
-        else:
-            print("[FusionAgent] No GROQ_API_KEY found. Will try local model fallback.")
+        # ── 1. Try local model first (unless user explicitly wants api-only) ──
+        if self.mode != "api":
+            self._init_local()
+            if self._local_llm:
+                self._warmup_local_llm()
+                print("[FusionAgent] Local LLM initialized (PRIMARY).")
+            else:
+                print("[FusionAgent] Local LLM failed to load.")
 
-        if self.llm is None:
-            self._init_local_fallback()
+        # ── 2. Try Groq API (primary when LLM_MODE=api, or fallback otherwise) ──
+        if self.mode == "api" or self._local_llm is None:
+            if self.api_key:
+                try:
+                    self.llm = ChatGroq(api_key=self.api_key, model_name=model, max_tokens=512)
+                    print("[FusionAgent] Groq API initialized (FALLBACK)." if self._local_llm else "[FusionAgent] Groq API initialized (PRIMARY).")
+                except Exception as e:
+                    print(f"[FusionAgent] Groq init failed: {e}")
+                    self.llm = None
+            else:
+                if self._local_llm is None:
+                    print("[FusionAgent] No GROQ_API_KEY found and local model unavailable.")
 
         self.system_prompt = (
             "You are a compassionate and professional AI therapist. "
@@ -80,12 +94,29 @@ class FusionAgent:
             ("human", "Face emotion: {face_emotion}\nVoice emotion: {voice_emotion}\nBiometrics: {biometric}\nUser said: {stt_text}\n\nOutput STRICT JSON: {{\"distress\": <0-100>, \"response\": \"your therapist text here\"}}")
         ])
 
-    def _init_local_fallback(self):
+    def _warmup_local_llm(self):
+        """Run a single-token dummy inference to warm up CUDA kernels and VRAM."""
+        if self._local_llm is None:
+            return
+        try:
+            print("[FusionAgent] Warming up local LLM (first CUDA kernel compile)...")
+            self._local_llm(
+                "<start_of_turn>user\nHi<end_of_turn>\n<start_of_turn>model\n",
+                max_tokens=1,
+                temperature=0.0,
+                stop=["<end_of_turn>"],
+                echo=False,
+            )
+            print("[FusionAgent] Local LLM warmup complete.")
+        except Exception as e:
+            print(f"[FusionAgent] Warmup warning: {e}")
+
+    def _init_local(self):
         if not os.path.exists(MODEL_PATH):
             print(f"[FusionAgent] Local model not found at {MODEL_PATH}.")
             return
         try:
-            print("[FusionAgent] Loading local therapist model (FALLBACK)...")
+            print("[FusionAgent] Loading local therapist model...")
             n_gpu = _detect_n_gpu_layers()
             self._local_llm = Llama(
                 model_path=MODEL_PATH,
@@ -94,7 +125,7 @@ class FusionAgent:
                 n_gpu_layers=n_gpu,
                 verbose=False,
             )
-            print(f"[FusionAgent] Local model loaded (FALLBACK, gpu_layers={n_gpu}).")
+            print(f"[FusionAgent] Local model loaded (gpu_layers={n_gpu}).")
         except Exception as e:
             print(f"[FusionAgent] Local model failed: {e}")
             self._local_llm = None
@@ -174,22 +205,7 @@ class FusionAgent:
         return {"distress": distress, "response": content}
 
     def fuse_inputs(self, face_emotion, voice_emotion, biometric, stt_text=""):
-        # PRIMARY: Groq API
-        if self.llm:
-            try:
-                chain = self.prompt | self.llm
-                response = chain.invoke({
-                    "face_emotion": face_emotion,
-                    "voice_emotion": voice_emotion,
-                    "biometric": biometric,
-                    "stt_text": stt_text if stt_text else "(no speech detected)"
-                })
-                return self._parse_json(response.content)
-            except Exception as e:
-                print(f"[FusionAgent] Groq error: {e}")
-                # Fall through to local
-
-        # FALLBACK: Local model
+        # ── PRIMARY: Local model ──
         if self._local_llm:
             try:
                 rag_query = f"{face_emotion} {voice_emotion} {stt_text}".strip()
@@ -206,6 +222,21 @@ class FusionAgent:
                 return self._parse_json(raw_text)
             except Exception as e:
                 print(f"[FusionAgent] Local inference error: {e}")
+                # Fall through to API if available
+
+        # ── FALLBACK: Groq API ──
+        if self.llm:
+            try:
+                chain = self.prompt | self.llm
+                response = chain.invoke({
+                    "face_emotion": face_emotion,
+                    "voice_emotion": voice_emotion,
+                    "biometric": biometric,
+                    "stt_text": stt_text if stt_text else "(no speech detected)"
+                })
+                return self._parse_json(response.content)
+            except Exception as e:
+                print(f"[FusionAgent] Groq error: {e}")
 
         # Ultimate fallback
         distress = 50

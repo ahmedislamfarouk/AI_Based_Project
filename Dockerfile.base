@@ -1,0 +1,47 @@
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=120 \
+    PIP_RETRIES=5
+
+RUN apt-get update && apt-get install -y \
+    python3.11 python3.11-venv python3-pip python3.11-dev \
+    libgl1 libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    libsndfile1 portaudio19-dev libpulse-dev libasound2-dev \
+    libusb-1.0-0 i2c-tools libi2c-dev ffmpeg \
+    gcc g++ make cmake ninja-build pkg-config git \
+    libegl1 libegl-mesa0 libglvnd0 libgl1-mesa-glx \
+    libgles2-mesa libgomp1 libopengl0 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+COPY requirements.txt /app/requirements.txt
+
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+RUN python -m pip install \
+        torch torchvision torchaudio \
+        --index-url https://download.pytorch.org/whl/cu121
+
+RUN python -m pip install --no-cache-dir --prefer-binary -r requirements.txt
+
+RUN python -m pip install --no-cache-dir --prefer-binary safetensors
+
+COPY scripts/patch_transformers.py /tmp/patch_transformers.py
+RUN python /tmp/patch_transformers.py && rm /tmp/patch_transformers.py
+
+RUN mkdir -p data/processed data/raw data/tts data/sessions data/video_sessions \
+    logs LLM/books LLM/faiss_index LLM/model
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV TF_CPP_MIN_LOG_LEVEL=3
+
+# Pre-download key models so first call is fast
+COPY scripts/preload_models.py /tmp/preload_models.py
+RUN python /tmp/preload_models.py && rm /tmp/preload_models.py

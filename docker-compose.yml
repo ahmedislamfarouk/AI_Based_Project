@@ -1,58 +1,108 @@
+# docker-compose.yml — Microservice architecture for AI Therapist
+#
+# BUILD (one-time, ~30 min):
+#   docker build -t ai-therapist-base:latest -f Dockerfile.base .
+#
+# BUILD + RUN (after any code change, seconds):
+#   docker compose build   # rebuilds only changed service Dockerfiles (just COPY)
+#   docker compose up -d
+#
+# TIP: After code changes, only rebuild the service(s) you changed:
+#   docker compose build web-api    # only rebuild the API layer
+#   docker compose build fusion-llm # only rebuild the LLM service
+
 services:
-  ai-based-system:
+  # ─── Microservices ────────────────────────────────────────────────────────
+
+  face-analysis:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: emotion-monitor
+      dockerfile: services/face_analysis/Dockerfile
     environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "8001:8001"
+    runtime: nvidia
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  voice-analysis:
+    build:
+      context: .
+      dockerfile: services/voice_analysis/Dockerfile
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./models:/app/models
+    runtime: nvidia
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  fusion-llm:
+    build:
+      context: .
+      dockerfile: services/fusion_llm/Dockerfile
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - NVIDIA_DISABLE_REQUIRE=1
+      - LLM_MODE=${LLM_MODE:-local}
       - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - NEWS_API_KEY=${NEWS_API_KEY:-}
-      - SERIAL_PORT=${SERIAL_PORT:-/dev/ttyUSB0}
-      - BIOMETRIC_SOURCE=${BIOMETRIC_SOURCE:-auto}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - TTS_BACKEND=${TTS_BACKEND:-gemini}
+      - GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL:-gemini-3.1-flash-tts-preview}
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./LLM/model:/app/LLM/model
+      - ./LLM/faiss_index:/app/LLM/faiss_index
+      - ./models:/app/models
+    runtime: nvidia
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # ─── API Gateway (orchestrator) ──────────────────────────────────────────
+
+  web-api:
+    build:
+      context: .
+      dockerfile: services/web_api/Dockerfile
+    environment:
+      - FACE_SERVICE_URL=http://face-analysis:8001
+      - VOICE_SERVICE_URL=http://voice-analysis:8002
+      - FUSION_SERVICE_URL=http://fusion-llm:8003
       - CAMERA_SOURCE=${CAMERA_SOURCE:-browser}
       - CAMERA_ID=${CAMERA_ID:-0}
-      - AUDIO_CHANNELS=${AUDIO_CHANNELS:-1}
-      - DISPLAY=${DISPLAY:-}
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-      - MEDIAPIPE_DISABLE_GPU=0
-      - FACE_ANALYSIS_URL=http://127.0.0.1:8001
+      - TTS_DISTRESS_THRESHOLD=${TTS_DISTRESS_THRESHOLD:-0}
+    ports:
+      - "8010:8010"
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-      - ./.env:/app/.env
-      - ./LLM/model:/app/LLM/model
-      - ./LLM/faiss_index:/app/LLM/faiss_index
-      # X11 forwarding for camera display (Linux)
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    # Hardware devices - COMMENT these out if running on laptop without sensors
-    # Uncomment when biometric sensor is connected on Maven Kit:
-    devices:
-      - /dev/i2c-1:/dev/i2c-1  # MAX30102 I2C sensor
-    #   - /dev/ttyUSB0:/dev/ttyUSB0  # Serial biometric sensor
-    # For laptop camera/mic testing, run with:
-    #   docker-compose run --device=/dev/video0 --device=/dev/snd ai-based-system
-    # ports:
-    #   - "8000:8000"  # FastAPI web app
-    network_mode: host
-    privileged: true
-    # Browser camera mode (default): do not map /dev/video0.
-    # If you explicitly want host camera mode, set CAMERA_SOURCE=device
-    # and uncomment /dev/video0 mapping.
-    # No host media devices are required in browser mode.
-    # If you switch to host device mode, map devices explicitly:
-    # devices:
-    #   - /dev/snd:/dev/snd
-    #   - /dev/video0:/dev/video0
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    command: uvicorn web_app:app --host 0.0.0.0 --port 8000
+    depends_on:
+      face-analysis:
+        condition: service_healthy
+      voice-analysis:
+        condition: service_healthy
+      fusion-llm:
+        condition: service_healthy
+    restart: unless-stopped
     stdin_open: true
     tty: true
-    restart: unless-stopped

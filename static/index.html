@@ -170,6 +170,10 @@
             <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             Video Session
           </button>
+          <button id="modeAvatarBtn" class="mode-tab" onclick="switchMode('avatar')">
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9.172 9.172a4 4 0 015.656 0M12 8v4m0 0v4m0-4h4m-4 0H8"/><circle cx="12" cy="12" r="10"/></svg>
+            Avatar
+          </button>
         </div>
 
         <div id="liveMode" class="space-y-5">
@@ -221,6 +225,13 @@
                 <div id="sttText" class="text-sm font-medium leading-relaxed hidden" style="color: var(--cyan);">
                   &#x1F3A4; <span id="sttContent"></span>
                 </div>
+                <div id="ttsControls" class="hidden flex items-center justify-center gap-2">
+                  <button id="ttsPlayBtn" onclick="window.playCurrentTTS()" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5" style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--accent);">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Play Audio
+                  </button>
+                  <span id="ttsStatus" class="text-xs" style="color: var(--foreground-muted);"></span>
+                </div>
                 <div class="gauge-wrap">
                   <svg viewBox="0 0 130 130" class="w-full h-full">
                     <circle class="gauge-bg" cx="65" cy="65" r="58"/>
@@ -262,6 +273,53 @@
               <div class="flex items-center gap-4"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: var(--accent);"></span><span class="text-xs" style="color: var(--foreground-muted);">Distress</span></div><span class="status-pill" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--accent);"><span class="w-1 h-1 rounded-full bg-current animate-pulse"></span>Live</span></div>
             </div>
             <div class="chart-wrap"><canvas id="distressChart"></canvas></div>
+          </div>
+        </div>
+
+        <div id="avatarMode" class="space-y-5" style="display:none;">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in delay-1">
+            <div>
+              <div class="video-wrap" style="aspect-ratio: 1/1; min-height: 400px;">
+                <div id="avatarContainer" style="width:100%;height:100%;"></div>
+                <div class="video-badge">
+                  <span id="avatarDot" class="w-1.5 h-1.5 rounded-full" style="background: var(--accent);"></span>
+                  <span>AI Avatar</span>
+                </div>
+              </div>
+              <div class="flex gap-3 mt-3">
+                <button onclick="rotateAvatar('left')" class="glass-card px-4 py-2 text-sm font-semibold" style="color: var(--foreground);">
+                  <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7"/></svg>
+                </button>
+                <button onclick="rotateAvatar('right')" class="glass-card px-4 py-2 text-sm font-semibold" style="color: var(--foreground);">
+                  <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7"/></svg>
+                </button>
+                <button onclick="resetAvatarView()" class="glass-card px-4 py-2 text-sm font-semibold" style="color: var(--foreground);">Reset</button>
+              </div>
+            </div>
+            <div class="therapist-wrap flex flex-col items-center justify-center text-center" style="min-height: 400px;">
+              <div class="mb-4">
+                <svg class="w-8 h-8 mx-auto" style="color: var(--accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] mt-2" style="color: var(--accent);">AI Avatar</p>
+              </div>
+              <div id="avatarEmotionTag" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-4" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: #FBBF24;">
+                <span id="avatarEmoji">&#x1F3AD;</span>
+                <span>Waiting for session...</span>
+              </div>
+              <div id="avatarResponse" class="text-base font-medium leading-relaxed px-4" style="color: var(--foreground);">
+                Start a session to see me come alive.
+              </div>
+              <div class="gauge-wrap mt-6">
+                <svg viewBox="0 0 130 130" class="w-full h-full">
+                  <circle class="gauge-bg" cx="65" cy="65" r="58"/>
+                  <circle id="avatarGaugeFill" class="gauge-fill" cx="65" cy="65" r="58"
+                    stroke-dasharray="364.42" stroke-dashoffset="364.42" stroke="var(--accent)"/>
+                </svg>
+                <div class="gauge-center">
+                  <span id="avatarDistress" class="font-mono-data text-3xl font-bold" style="color: var(--foreground);">0</span>
+                  <span class="gauge-label">Distress</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -345,6 +403,12 @@
                   <span class="text-xs font-bold uppercase tracking-[0.2em]" style="color: var(--accent);">AI Therapist Response</span>
                 </div>
                 <div id="resultLlm" class="text-base font-medium leading-relaxed" style="color: var(--foreground);">--</div>
+                <div id="videoTtsControls" class="hidden flex items-center justify-center gap-2 pt-2">
+                  <button id="videoTtsPlayBtn" onclick="window.playVideoTTS()" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5" style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--accent);">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Play Audio
+                  </button>
+                </div>
               </div>
             </div>
 

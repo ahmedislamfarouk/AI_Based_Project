@@ -84,17 +84,30 @@ python -c "
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+import numpy as np
+from deepface import DeepFace
+
 weights_path = os.path.expanduser('~/.deepface/weights/facial_expression_model_weights.h5')
 if not os.path.exists(weights_path):
     try:
-        from deepface import DeepFace
-        DeepFace.analyze([[1]], actions=['emotion'], enforce_detection=False, silent=True)
-    except:
-        pass
-if os.path.exists(weights_path):
-    print('DeepFace facial expression weights ready.')
+        # Create a valid dummy RGB image for DeepFace using OpenCV
+        import cv2
+        tmp_path = '/tmp/dummy_face.jpg'
+        dummy = np.zeros((64, 64, 3), dtype=np.uint8)
+        cv2.imwrite(tmp_path, dummy)
+        DeepFace.analyze(tmp_path, actions=['emotion'], enforce_detection=False, silent=True)
+        print('DeepFace weights downloaded successfully.')
+    except Exception as e:
+        print(f'DeepFace download note: {e}')
 else:
-    print('DeepFace weights will download on first use.')
+    print('DeepFace facial expression weights already cached.')
+
+# Also preload the emotion model into memory so first inference is fast
+try:
+    DeepFace.build_model('Emotion')
+    print('DeepFace Emotion model built and cached.')
+except Exception as e:
+    print(f'DeepFace build_model note: {e}')
 " || echo "[6/6] WARNING: DeepFace weights check failed. Will download on first use."
 
 echo "=========================================="

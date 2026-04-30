@@ -25,6 +25,8 @@ let recordingTimerInterval = null;
 let MAX_RECORDING_MS = 20 * 60 * 1000;
 let videoSessionId = null;
 let videoPollInterval = null;
+let lastPlayedAudioB64 = null;  // prevent replaying same audio
+let currentAudio = null;        // reference to currently playing Audio object
 
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 58;
 
@@ -56,8 +58,7 @@ const emotionColors = {
 };
 
 function handleVideoError(img) {
-  img.style.display = 'none';
-  document.getElementById('videoPlaceholder').classList.remove('hidden');
+  console.log('[Video] feed error, will retry on session start');
 }
 
 function toggleFullscreen() {
@@ -247,6 +248,106 @@ function startTimer() {
 
 function stopTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; document.getElementById('sessionTimer').textContent = '00:00:00'; }
 
+function playTTS(data) {
+  console.log('[TTS] playTTS called with keys:', Object.keys(data));
+  const b64 = data.tts_audio_b64;
+  const url = data.tts_audio_url;
+  const mime = data.tts_audio_mime || 'audio/wav';
+
+  console.log('[TTS] b64 present:', !!b64, 'url present:', !!url, 'mime:', mime);
+
+  if (!b64 && !url) {
+    console.log('[TTS] EARLY RETURN: no b64 and no url');
+    return;
+  }
+  if (b64 && b64 === lastPlayedAudioB64) {
+    console.log('[TTS] EARLY RETURN: already played this b64');
+    return;
+  }
+
+  try {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+
+    if (b64) {
+      const dataUrl = `data:${mime};base64,${b64}`;
+      console.log('[TTS] Creating Audio from data URL, length:', dataUrl.length);
+      currentAudio = new Audio(dataUrl);
+      lastPlayedAudioB64 = b64;
+    } else if (url) {
+      console.log('[TTS] Creating Audio from URL:', url);
+      currentAudio = new Audio(url);
+    }
+
+    if (currentAudio) {
+      console.log('[TTS] Setting up audio events...');
+      currentAudio.addEventListener('canplaythrough', () => {
+        console.log('[TTS] Audio can play, calling .play()...');
+        const playPromise = currentAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            console.log('[TTS] Playback STARTED successfully');
+            updateTTSStatus('Playing...', true);
+          }).catch(err => {
+            console.warn('[TTS] Playback FAILED:', err.name, err.message);
+            updateTTSStatus('Click 🔊 to play', true);
+          });
+        }
+      }, { once: true });
+
+      currentAudio.addEventListener('ended', () => {
+        updateTTSStatus('Finished', true);
+      });
+
+      currentAudio.addEventListener('error', (e) => {
+        console.error('[TTS] Audio load error:', e);
+        updateTTSStatus('Error loading audio', true);
+      });
+
+      currentAudio.load();
+    }
+  } catch (err) {
+    console.error('[TTS] Playback exception:', err);
+  }
+}
+
+function updateTTSStatus(text, showControls) {
+  const ctrl = document.getElementById('ttsControls');
+  const status = document.getElementById('ttsStatus');
+  if (ctrl && status) {
+    status.textContent = text;
+    if (showControls) ctrl.classList.remove('hidden');
+  }
+}
+
+window.playCurrentTTS = function() {
+  console.log('[TTS] Manual play clicked');
+  if (currentAudio) {
+    currentAudio.play().then(() => {
+      console.log('[TTS] Manual play SUCCESS');
+      updateTTSStatus('Playing...', true);
+    }).catch(err => {
+      console.warn('[TTS] Manual play failed:', err);
+      updateTTSStatus('Playback blocked by browser', true);
+    });
+  } else {
+    console.warn('[TTS] No currentAudio available');
+  }
+};
+
+window.playVideoTTS = function() {
+  console.log('[TTS] Video manual play clicked');
+  if (currentAudio) {
+    currentAudio.play().then(() => {
+      console.log('[TTS] Video manual play SUCCESS');
+    }).catch(err => {
+      console.warn('[TTS] Video manual play failed:', err);
+    });
+  }
+};
+
 function updateUI(data) {
   const wasRunning = isRunning;
   isRunning = data.running;
@@ -287,6 +388,42 @@ function updateUI(data) {
   document.getElementById('sessionStatus').textContent = isRunning ? 'Session in progress' : 'Press Start to begin monitoring';
   document.getElementById('btnStart').disabled = isRunning;
   document.getElementById('btnStop').disabled = !isRunning;
+
+  // Auto-play TTS audio when available
+  playTTS(data);
+
+  // Show TTS controls if audio is available
+  const ttsCtrl = document.getElementById('ttsControls');
+  if (ttsCtrl) {
+    if (data.tts_audio_b64 || data.tts_audio_url) {
+      ttsCtrl.classList.remove('hidden');
+      if (!currentAudio || currentAudio.paused) {
+        updateTTSStatus('Click to play', true);
+      }
+    } else {
+      ttsCtrl.classList.add('hidden');
+    }
+  }
+
+  // Update avatar tab
+  if (currentMode === 'avatar') {
+    const emotion = data.video_emotion || 'Neutral';
+    const distress = Number(data.distress) || 0;
+    updateAvatarMood(emotion, distress);
+    const avEmoji = emotionEmoji[emotion] || '\u{1F3AD}';
+    document.getElementById('avatarEmoji').textContent = avEmoji;
+    document.getElementById('avatarEmotionTag').querySelector('span:last-child').textContent = emotion;
+    document.getElementById('avatarResponse').textContent = data.llm_response || 'Waiting...';
+    const avGauge = document.getElementById('avatarGaugeFill');
+    if (avGauge) { avGauge.style.strokeDashoffset = GAUGE_CIRCUMFERENCE - (distress / 100) * GAUGE_CIRCUMFERENCE; }
+    const avDist = document.getElementById('avatarDistress');
+    if (avDist) { avDist.textContent = distress; }
+  }
+}
+    } else {
+      ttsCtrl.classList.add('hidden');
+    }
+  }
 }
 
 // ========== LIVE MODE ==========
@@ -301,6 +438,9 @@ async function startSession() {
     const json = await res.json();
     console.log('Start:', json);
     sparkVideo = []; sparkVoice = []; sparkBio = [];
+    document.getElementById('videoPlaceholder').classList.add('hidden');
+    document.getElementById('videoFeed').style.display = '';
+    document.getElementById('videoFeed').src = '/video_feed?' + Date.now();
     startFrameUploadLoop();
     startAudioUploadLoop();
   } catch (e) { console.error('Start error:', e); }
@@ -322,11 +462,12 @@ function switchMode(mode) {
   currentMode = mode;
   document.getElementById('liveMode').style.display = mode === 'live' ? '' : 'none';
   document.getElementById('videoMode').style.display = mode === 'video' ? '' : 'none';
+  document.getElementById('avatarMode').style.display = mode === 'avatar' ? '' : 'none';
   document.getElementById('modeLiveBtn').classList.toggle('active', mode === 'live');
   document.getElementById('modeVideoBtn').classList.toggle('active', mode === 'video');
-  if (mode === 'live' && ws && ws.readyState === WebSocket.OPEN) {
-    // reconnect ws if needed
-  }
+  document.getElementById('modeAvatarBtn').classList.toggle('active', mode === 'avatar');
+  if (mode === 'avatar') { initAvatar(); }
+}
 }
 
 async function requestVideoPermissions() {
@@ -474,6 +615,9 @@ function pollVideoResults() {
 }
 
 function displayVideoResults(data) {
+  console.log('[VideoResults] displayVideoResults called with keys:', Object.keys(data));
+  console.log('[VideoResults] tts_audio_b64 present:', !!data.tts_audio_b64, 'len:', data.tts_audio_b64 ? data.tts_audio_b64.length : 0);
+  console.log('[VideoResults] tts_audio_url:', data.tts_audio_url);
   document.getElementById('videoProcessing').style.display = 'none';
   document.getElementById('videoResults').style.display = '';
 
@@ -497,6 +641,19 @@ function displayVideoResults(data) {
 
   document.getElementById('resultStt').textContent = data.stt_text || '(No speech detected)';
   document.getElementById('resultLlm').textContent = data.llm_response || 'No response generated.';
+
+  // Auto-play TTS audio for video session results
+  playTTS(data);
+
+  // Show video TTS controls if audio is available
+  const videoTtsCtrl = document.getElementById('videoTtsControls');
+  if (videoTtsCtrl) {
+    if (data.tts_audio_b64 || data.tts_audio_url) {
+      videoTtsCtrl.classList.remove('hidden');
+    } else {
+      videoTtsCtrl.classList.add('hidden');
+    }
+  }
 
   document.getElementById('videoResults').scrollIntoView({ behavior: 'smooth' });
 }
@@ -561,6 +718,177 @@ function updateSidebar(rows) {
     html += `<div class="event-item"><div class="event-time">${timeStr}</div><div class="event-row"><span class="event-emotion" style="color: ${colors.text};"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${colors.text};opacity:0.6;"></span>${emotion}</span><span class="event-distress" style="color: ${distressColor};">${level}</span></div><div class="event-rec">${rec}</div></div>`;
   });
   container.innerHTML = html;
+}
+
+// ========== AVATAR (Three.js Cube Head) ==========
+
+let avatarScene, avatarCamera, avatarRenderer, avatarCube, avatarLeftEye, avatarRightEye;
+let avatarLeftPupil, avatarRightPupil, avatarLeftBrow, avatarRightBrow;
+let avatarInit = false, avatarLoading = false;
+let avatarRotY = 0, avatarRotX = 0.3;
+let avatarTargetRotY = 0;
+let avatarMood = { happy: 0, sad: 0, angry: 0, surprised: 0 };
+
+function loadThreeJS() {
+  return new Promise((resolve, reject) => {
+    if (window.THREE) { resolve(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Three.js failed to load'));
+    document.head.appendChild(script);
+  });
+}
+
+async function initAvatar() {
+  if (avatarInit || avatarLoading) return;
+  avatarLoading = true;
+  try {
+    await loadThreeJS();
+  } catch (e) {
+    console.warn('Three.js CDN unavailable, avatar disabled');
+    avatarLoading = false;
+    return;
+  }
+  avatarLoading = false;
+  const THREE = window.THREE;
+  const container = document.getElementById('avatarContainer');
+  if (!container || container.clientWidth === 0) return;
+
+  const w = container.clientWidth, h = container.clientHeight || 400;
+
+  avatarScene = new THREE.Scene();
+  avatarScene.background = new THREE.Color(0x050506);
+
+  avatarCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+  avatarCamera.position.set(0, 0.2, 6);
+  avatarCamera.lookAt(0, 0, 0);
+
+  avatarRenderer = new THREE.WebGLRenderer({ antialias: true });
+  avatarRenderer.setSize(w, h);
+  avatarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(avatarRenderer.domElement);
+
+  const ambientLight = new THREE.AmbientLight(0x404060, 1.2);
+  avatarScene.add(ambientLight);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  keyLight.position.set(2, 2, 3);
+  avatarScene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0x00ff88, 0.4);
+  rimLight.position.set(-2, -1, -2);
+  avatarScene.add(rimLight);
+
+  // Head cube
+  const headGeo = new THREE.BoxGeometry(2.2, 2.5, 1.8, 2, 2, 2);
+  const headMat = new THREE.MeshPhongMaterial({ color: 0x2a2a3a, specular: 0x111122, shininess: 30 });
+  avatarCube = new THREE.Mesh(headGeo, headMat);
+  avatarCube.position.y = 0.2;
+  avatarScene.add(avatarCube);
+
+  // Eyes
+  const eyeGeo = new THREE.SphereGeometry(0.22, 16, 16);
+  const eyeMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+  avatarLeftEye = new THREE.Mesh(eyeGeo, eyeMat);
+  avatarLeftEye.position.set(-0.5, 0.35, 0.92);
+  avatarScene.add(avatarLeftEye);
+  avatarRightEye = new THREE.Mesh(eyeGeo, eyeMat);
+  avatarRightEye.position.set(0.5, 0.35, 0.92);
+  avatarScene.add(avatarRightEye);
+
+  // Pupils
+  const pupilGeo = new THREE.SphereGeometry(0.1, 8, 8);
+  const pupilMat = new THREE.MeshPhongMaterial({ color: 0x000000 });
+  avatarLeftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+  avatarLeftPupil.position.set(-0.5, 0.35, 1.08);
+  avatarScene.add(avatarLeftPupil);
+  avatarRightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+  avatarRightPupil.position.set(0.5, 0.35, 1.08);
+  avatarScene.add(avatarRightPupil);
+
+  // Eyebrows
+  const browGeo = new THREE.BoxGeometry(0.5, 0.08, 0.08);
+  const browMat = new THREE.MeshPhongMaterial({ color: 0x111122 });
+  avatarLeftBrow = new THREE.Mesh(browGeo, browMat);
+  avatarLeftBrow.position.set(-0.5, 0.65, 0.95);
+  avatarScene.add(avatarLeftBrow);
+  avatarRightBrow = new THREE.Mesh(browGeo, browMat);
+  avatarRightBrow.position.set(0.5, 0.65, 0.95);
+  avatarScene.add(avatarRightBrow);
+
+  avatarInit = true;
+  animateAvatar();
+
+  window.addEventListener('resize', () => {
+    if (!avatarRenderer || currentMode !== 'avatar') return;
+    const c = document.getElementById('avatarContainer');
+    if (c) { avatarRenderer.setSize(c.clientWidth, c.clientHeight || 400); avatarCamera.aspect = c.clientWidth / (c.clientHeight || 400); avatarCamera.updateProjectionMatrix(); }
+  });
+}
+
+function animateAvatar() {
+  if (!avatarInit || currentMode !== 'avatar') { requestAnimationFrame(animateAvatar); return; }
+
+  // Smooth rotation
+  avatarRotY += (avatarTargetRotY - avatarRotY) * 0.05;
+  avatarCube.rotation.y = avatarRotY;
+  avatarCube.rotation.x = avatarRotX;
+
+  // Move eyes with cube
+  avatarLeftEye.rotation.y = avatarRotY;
+  avatarRightEye.rotation.y = avatarRotY;
+  avatarLeftEye.position.set(-0.5, 0.35, 0.92);
+  avatarRightEye.position.set(0.5, 0.35, 0.92);
+
+  // Pupils follow rotation + mood offset
+  const px = avatarMood.happy * 0.04 - avatarMood.sad * 0.02;
+  const py = avatarMood.happy * 0.03 + avatarMood.surprised * 0.05;
+  avatarLeftPupil.position.set(-0.5 + px, 0.35 + py, 1.08);
+  avatarRightPupil.position.set(0.5 + px, 0.35 + py, 1.08);
+
+  // Eyebrows react to mood
+  const browY = 0.65 - avatarMood.angry * 0.15 + avatarMood.sad * 0.1 + avatarMood.surprised * 0.2;
+  const browAngle = avatarMood.angry * 0.3 - avatarMood.sad * 0.2;
+  avatarLeftBrow.position.set(-0.5, browY, 0.95);
+  avatarLeftBrow.rotation.z = browAngle;
+  avatarRightBrow.position.set(0.5, browY, 0.95);
+  avatarRightBrow.rotation.z = -browAngle;
+
+  // Head color reflects distress
+  const distress = avatarMood._distress || 0;
+  const headColor = new THREE.Color();
+  if (distress < 40) headColor.setHSL(0.55, 0.4, 0.2 + distress * 0.002);
+  else if (distress < 70) headColor.setHSL(0.12, 0.6, 0.18);
+  else headColor.setHSL(0.0, 0.8, 0.15);
+  avatarCube.material.color = headColor;
+
+  renderAvatar();
+  requestAnimationFrame(animateAvatar);
+}
+
+function renderAvatar() {
+  if (!avatarRenderer || !avatarScene || !avatarCamera) return;
+  // Eyes follow cube
+  avatarLeftEye.matrixAutoUpdate = false;
+  avatarRightEye.matrixAutoUpdate = false;
+  avatarLeftPupil.matrixAutoUpdate = false;
+  avatarRightPupil.matrixAutoUpdate = false;
+  avatarLeftEye.position.applyMatrix4(avatarCube.matrixWorld);
+  avatarRightEye.position.applyMatrix4(avatarCube.matrixWorld);
+  avatarLeftPupil.position.applyMatrix4(avatarCube.matrixWorld);
+  avatarRightPupil.position.applyMatrix4(avatarCube.matrixWorld);
+  avatarRenderer.render(avatarScene, avatarCamera);
+}
+
+function rotateAvatar(dir) { avatarTargetRotY += dir === 'left' ? -0.8 : 0.8; }
+function resetAvatarView() { avatarTargetRotY = 0; avatarRotX = 0.3; }
+
+function updateAvatarMood(emotion, distress) {
+  avatarMood.happy = emotion === 'Happy' ? 1 : avatarMood.happy * 0.85;
+  avatarMood.sad = emotion === 'Sad' ? 1 : avatarMood.sad * 0.85;
+  avatarMood.angry = emotion === 'Angry' ? 1 : avatarMood.angry * 0.85;
+  avatarMood.surprised = emotion === 'Surprise' ? 1 : avatarMood.surprised * 0.85;
+  if (emotion === 'Fear') { avatarMood.surprised = 0.7; avatarMood.sad = 0.5; }
+  avatarMood._distress = distress || 0;
 }
 
 // ========== KEYBOARD & INIT ==========

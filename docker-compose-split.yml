@@ -1,0 +1,53 @@
+# docker-compose-split.yml — Two-stage build to avoid redownloading heavy deps
+#
+# BUILD INSTRUCTIONS:
+#
+# 1. Build the base image ONCE (only rebuild when requirements.txt or system deps change):
+#      docker build -t ai-therapist-base:latest -f Dockerfile.base .
+#
+# 2. Build and run the app (fast — only copies code):
+#      docker compose -f docker-compose-split.yml build
+#      docker compose -f docker-compose-split.yml up -d
+#
+# 3. After code changes, just rebuild the app (few seconds, no re-downloading PyTorch):
+#      docker compose -f docker-compose-split.yml up -d --build
+
+services:
+  ai-based-system-v2:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - NEWS_API_KEY=${NEWS_API_KEY:-}
+      - SERIAL_PORT=${SERIAL_PORT:-/dev/ttyUSB0}
+      - BIOMETRIC_SOURCE=${BIOMETRIC_SOURCE:-auto}
+      - CAMERA_SOURCE=${CAMERA_SOURCE:-browser}
+      - CAMERA_ID=${CAMERA_ID:-0}
+      - AUDIO_CHANNELS=${AUDIO_CHANNELS:-1}
+      - DISPLAY=${DISPLAY:-}
+      - LLM_MODE=${LLM_MODE:-local}
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - NVIDIA_DISABLE_REQUIRE=1
+      - MEDIAPIPE_DISABLE_GPU=0
+      - FACE_ANALYSIS_URL=http://127.0.0.1:8001
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - TTS_BACKEND=${TTS_BACKEND:-gemini}
+      - TTS_DISTRESS_THRESHOLD=${TTS_DISTRESS_THRESHOLD:-0}
+      - GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL:-gemini-3.1-flash-tts-preview}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+      - ./LLM/model:/app/LLM/model
+      - ./LLM/faiss_index:/app/LLM/faiss_index
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+    network_mode: host
+    runtime: nvidia
+    command: uvicorn web_app:app --host 0.0.0.0 --port 8010
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

@@ -138,6 +138,37 @@ def get_face_mesh():
         _face_mesh_failed = True
         return None
 
+def draw_face_mesh_fast(frame, face_mesh=None, emotion_text=""):
+    """
+    Fast overlay: MediaPipe landmarks + emotion text from system_state.
+    Does NOT call DeepFace. Runs at 30+ fps.
+    """
+    if face_mesh is None:
+        face_mesh = get_face_mesh()
+    if face_mesh is None:
+        return frame
+
+    try:
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(rgb)
+        h, w, _ = frame.shape
+        if results.multi_face_landmarks:
+            for face_landmarks in results.multi_face_landmarks:
+                landmarks = np.array([(int(lm.x * w), int(lm.y * h)) for lm in face_landmarks.landmark])
+                xs, ys = landmarks[:, 0], landmarks[:, 1]
+                x_min, x_max = xs.min(), xs.max()
+                y_min, y_max = ys.min(), ys.max()
+                cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+                display_emotion = emotion_text if emotion_text else "Neutral"
+                cv2.putText(frame, display_emotion, (x_min, y_min - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                for (x, y) in landmarks[::3]:
+                    cv2.circle(frame, (x, y), 1, (0, 255, 0), -1)
+    except Exception as e:
+        pass
+    return frame
+
+
 def analyze_faces_and_draw(frame, face_mesh=None):
     """
     Enhance the image, detect faces, emotions, drowsiness, yawning, nodding, and draw overlays.
