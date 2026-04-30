@@ -723,7 +723,7 @@ function loadThreeJS() {
   return new Promise((resolve, reject) => {
     if (window.THREE) { resolve(); return; }
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    script.src = '/static/js/three.min.js';
     script.onload = resolve;
     script.onerror = () => reject(new Error('Three.js failed to load'));
     document.head.appendChild(script);
