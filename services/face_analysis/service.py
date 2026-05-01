@@ -115,8 +115,15 @@ def is_angry_by_probability(face_idx, raw_probs_dict):
 
 def analyze_frame_deepface(face_crop):
     if not DEEPFACE_AVAILABLE:
-        return "Unknown", {}
+        return "Neutral", {}
+    if face_crop is None or face_crop.size == 0:
+        return "Neutral", {}
+    h, w = face_crop.shape[:2]
+    if h < 30 or w < 30:
+        return "Neutral", {}
     try:
+        if h < 100 or w < 100:
+            face_crop = cv2.resize(face_crop, (max(w, 100), max(h, 100)))
         result = DeepFace.analyze(
             face_crop, actions=['emotion'],
             enforce_detection=False,
@@ -125,6 +132,8 @@ def analyze_frame_deepface(face_crop):
         )
         emotion = result[0]['dominant_emotion']
         raw_probs = result[0].get('emotion', {})
+        if raw_probs and max(raw_probs.values()) < 0.20:
+            return "Neutral", raw_probs
         emotion = emotion.capitalize() if isinstance(emotion, str) else emotion
         return emotion, raw_probs
     except Exception as e:
@@ -138,10 +147,12 @@ def analyze_frame_deepface(face_crop):
             )
             emotion = result[0]['dominant_emotion']
             raw_probs = result[0].get('emotion', {})
+            if raw_probs and max(raw_probs.values()) < 0.20:
+                return "Neutral", raw_probs
             emotion = emotion.capitalize() if isinstance(emotion, str) else emotion
             return emotion, raw_probs
         except Exception:
-            return "Unknown", {}
+            return "Neutral", {}
 
 
 def analyze_with_mediapipe(frame, face_mesh):
@@ -267,9 +278,6 @@ def analyze_with_haar(frame):
     if (w / frame.shape[1]) < 0.05:
         return frame, []
     emotion, raw_probs = analyze_frame_deepface(face_crop)
-    max_prob = max(raw_probs.values()) if raw_probs else 0
-    if max_prob < 0.25:
-        emotion = "Neutral"
     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.putText(frame, emotion, (x, y - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -321,6 +329,8 @@ async def analyze(frame: UploadFile = File(...)):
                     "faces": results,
                     "annotated_frame_b64": base64.b64encode(img_encoded).decode('utf-8')
                 }
+            else:
+                print("[FaceService] MediaPipe found no faces, falling through to Haar")
         except Exception as e:
             print(f"[FaceService] MediaPipe analysis failed, falling back to Haar: {e}")
             _mesh = None

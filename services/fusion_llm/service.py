@@ -24,6 +24,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 fusion_agent = None
 tts_engine = None
 TTSEngineClass = TTSEngine
+_inference_lock = threading.Lock()
 
 TTS_OUTPUT_DIR = Path("data/tts")
 TTS_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -58,7 +59,7 @@ def health():
 
 
 @app.post("/fuse")
-async def fuse_sensors(data: dict):
+def fuse_sensors(data: dict):
     """
     Fuse multimodal inputs and return therapist response.
     Body: {"face_emotion": "Happy", "voice_emotion": "Neutral", "biometric": "HR: 72", "stt_text": "I feel good"}
@@ -71,17 +72,18 @@ async def fuse_sensors(data: dict):
     biometric = data.get("biometric", "N/A")
     stt_text = data.get("stt_text", "")
 
-    try:
-        result = fusion_agent.fuse_inputs(face_emotion, voice_emotion, biometric, stt_text)
-        if not isinstance(result, dict):
-            result = {"distress": 50, "response": str(result)}
-        return result
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+    with _inference_lock:
+        try:
+            result = fusion_agent.fuse_inputs(face_emotion, voice_emotion, biometric, stt_text)
+            if not isinstance(result, dict):
+                result = {"distress": 50, "response": str(result)}
+            return result
+        except Exception as e:
+            return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.post("/tts/generate")
-async def generate_tts(data: dict):
+def generate_tts(data: dict):
     """
     Generate TTS audio from text. Returns base64-encoded WAV.
     Body: {"text": "Hello, I am your AI therapist."}

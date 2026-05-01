@@ -96,6 +96,8 @@ current_logger = None
 
 latest_raw_frame = None
 latest_display_frame = None
+latest_annotated_frame = None
+latest_annotated_time = 0.0
 
 state_lock = threading.Lock()
 frame_lock = threading.Lock()
@@ -114,7 +116,7 @@ else:
 
 VOICE_BUFFER = bytearray()
 VOICE_BUFFER_LOCK = threading.Lock()
-VOICE_AUDIO_THRESHOLD = 16000 * 2  # 2 seconds of audio before sending
+VOICE_AUDIO_THRESHOLD = 16000 * 1  # 1 second of audio before sending
 
 
 def _call_face_service(frame_bgr):
@@ -232,41 +234,38 @@ def frame_reader():
 
 
 def display_worker():
-    global latest_display_frame
+    global latest_display_frame, latest_annotated_frame, latest_annotated_time
     while True:
         if not running:
             time.sleep(0.1)
             continue
 
+        now = time.time()
         with frame_lock:
             frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
+            annotated_frame = latest_annotated_frame
+            annotated_age = now - latest_annotated_time if latest_annotated_frame is not None else 999
 
         if frame is not None:
-            annotated = frame.copy()
-            emotion_text = ""
-            with state_lock:
-                emotion_text = system_state.get("video_emotion", "")
-
-            try:
-                gray = cv2.cvtColor(annotated, cv2.COLOR_BGR2GRAY)
-                cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-                faces = cascade.detectMultiScale(gray, 1.3, 5)
-                for (x, y, w, h) in faces:
-                    cv2.rectangle(annotated, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    cv2.putText(annotated, str(emotion_text), (x, y - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-            except Exception:
-                pass
+            if annotated_frame is not None and annotated_age < 2.0:
+                display = annotated_frame.copy()
+            else:
+                display = frame.copy()
+                with state_lock:
+                    emotion_text = system_state.get("video_emotion", "")
+                if emotion_text:
+                    cv2.putText(display, f"Emotion: {emotion_text}", (10, 30),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
             with frame_lock:
-                latest_display_frame = annotated
+                latest_display_frame = display
 
         time.sleep(0.033)
 
 
 def video_worker():
-    """Send frames to face analysis microservice every 2 seconds."""
-    global system_state
+    """Send frames to face analysis microservice every 1 second."""
+    global system_state, latest_annotated_frame, latest_annotated_time
     last_analysis = 0
     while True:
         if not running:
@@ -274,7 +273,7 @@ def video_worker():
             continue
 
         now = time.time()
-        if now - last_analysis < 2.0:
+        if now - last_analysis < 1.0:
             time.sleep(0.1)
             continue
 
@@ -286,10 +285,10 @@ def video_worker():
             if emotion:
                 with state_lock:
                     system_state["video_emotion"] = emotion
-                # Update display frame with annotated version from service
                 if annotated is not None:
                     with frame_lock:
-                        latest_display_frame = annotated
+                        latest_annotated_frame = annotated
+                        latest_annotated_time = time.time()
             last_analysis = now
         time.sleep(0.1)
 
@@ -342,7 +341,7 @@ def ai_fusion_worker():
     global system_state, current_logger
     last_recommendation = ""
     last_tts_time = 0
-    tts_repeat_interval = 15
+    tts_repeat_interval = 5
     tts_distress_threshold = int(os.getenv("TTS_DISTRESS_THRESHOLD", "0"))
     while True:
         if not running:
@@ -392,7 +391,7 @@ def ai_fusion_worker():
             print(f"[AI Fusion] Error: {e}")
             import traceback
             traceback.print_exc()
-        time.sleep(3)
+        time.sleep(2)
 
 
 for target in [frame_reader, display_worker, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:

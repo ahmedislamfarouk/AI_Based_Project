@@ -91,7 +91,7 @@ function stopBrowserCamera() {
 
 function startFrameUploadLoop() {
   if (frameUploadTimer) return;
-  frameUploadTimer = setInterval(captureAndSendFrame, 100);
+  frameUploadTimer = setInterval(captureAndSendFrame, 66);
 }
 
 async function captureAndSendFrame() {
@@ -137,7 +137,7 @@ async function initBrowserAudio() {
 
 function startAudioUploadLoop() {
   if (audioUploadTimer) return;
-  audioUploadTimer = setInterval(uploadAudioChunk, 3000);
+  audioUploadTimer = setInterval(uploadAudioChunk, 2000);
 }
 
 function stopBrowserAudio() {
