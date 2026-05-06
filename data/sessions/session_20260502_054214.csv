@@ -1,0 +1,5 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T05:43:03.713355,Sad,Sad,30,"Hi! I'm doing okay, thanks for asking. It's nice to connect with someone who might be feeling a little down. I'm here to listen if you'd like to share.","Hi, how are you?"
+2026-05-02T05:43:53.911046,Sad,Sad,85,That sounds incredibly painful. It's completely understandable to feel heartbroken after something like that. It takes courage to share such a difficult experience.,"Yeah, so I feel it'll be down because my girlfriend her name is Aala Eldin, by the way, she just cheated me."
+2026-05-02T05:44:36.484772,Sad,Disgust,85,"It's really okay to feel disgusted and sad right now. That's a very difficult thing to go through, and your feelings are valid.",Can you say hi Dr. Laila?
+2026-05-02T05:44:53.095770,Sad,Sad,75,Hi Dr. Laila!,"Okay, yes, say high Dr. Laila."

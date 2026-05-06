@@ -25,18 +25,29 @@ _lock = threading.Lock()
 @app.on_event("startup")
 def startup():
     global ser, stt
-    import torch
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"[VoiceService] Device: {device}")
-    ser = SERInference(model_path="models/ser/wavlm_hubert_optimized_seed42.pth")
-    stt = STTEngine(model_size="tiny", device=device)
-    print("[VoiceService] Ready.")
+    def _load():
+        global ser, stt
+        import torch
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"[VoiceService] Device: {device}")
+        try:
+            ser = SERInference(model_path="models/ser/wavlm_hubert_optimized_seed42.pth")
+            print("[VoiceService] SER model loaded.")
+        except Exception as e:
+            print(f"[VoiceService] SER load failed: {e}")
+        try:
+            stt = STTEngine(model_size="tiny", device=device)
+            print("[VoiceService] STT model loaded.")
+        except Exception as e:
+            print(f"[VoiceService] STT load failed: {e}")
+        print("[VoiceService] Ready.")
+    threading.Thread(target=_load, daemon=True).start()
 
 
 @app.get("/health")
 def health():
     return {
-        "status": "ok",
+        "status": "ok" if (ser is not None or stt is not None) else "loading",
         "ser_loaded": ser is not None and ser.model is not None,
         "stt_loaded": stt is not None and stt.model is not None,
     }

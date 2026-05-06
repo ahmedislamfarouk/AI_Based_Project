@@ -1,0 +1,9 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T03:27:50.306111,Angry,Starting...,0,Initializing...,
+2026-05-02T03:27:53.306404,Sad,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:27:56.306790,Sad,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:27:59.307163,Neutral,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:28:02.307551,Neutral,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:28:05.307842,Sad,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:28:08.308158,Neutral,Fear,60,It sounds like you're carrying a lot right now. It takes strength to bring these things to a conversation. What feels most difficult about this situation?,
+2026-05-02T03:28:24.044180,Sad,Idle,0,Session stopped.,

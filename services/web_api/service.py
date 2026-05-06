@@ -25,9 +25,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from modules.output.session_logger import SessionLogger
 
-# Web API is lightweight: no ML deps. Face detection happens in face-analysis service.
-# Display uses simple OpenCV Haar cascade for face boxes (fast, no GPU needed).
-
 FACE_SERVICE_URL = os.getenv("FACE_SERVICE_URL", "http://127.0.0.1:8001")
 VOICE_SERVICE_URL = os.getenv("VOICE_SERVICE_URL", "http://127.0.0.1:8002")
 FUSION_SERVICE_URL = os.getenv("FUSION_SERVICE_URL", "http://127.0.0.1:8003")
@@ -79,7 +76,6 @@ def sanitize_for_json(obj):
 system_state = {
     "video_emotion": "Idle",
     "voice_emotion": "Idle",
-    "biometric_data": "Idle",
     "stt_text": "",
     "llm_response": "Start a session to begin monitoring.",
     "distress": 0,
@@ -87,6 +83,10 @@ system_state = {
     "tts_audio_mime": "audio/wav",
     "tts_audio_b64": None,
     "tts_generating": False,
+    "conversation_history": [],
+    "health_face": "off",
+    "health_voice": "off",
+    "health_llm": "off",
 }
 
 TTS_OUTPUT_DIR = Path(os.path.join(os.path.dirname(__file__), "..", "data", "tts"))
@@ -95,9 +95,7 @@ running = False
 current_logger = None
 
 latest_raw_frame = None
-latest_display_frame = None
-latest_annotated_frame = None
-latest_annotated_time = 0.0
+raw_frame_version = 0
 
 state_lock = threading.Lock()
 frame_lock = threading.Lock()
@@ -108,7 +106,11 @@ CAMERA_ID = int(os.getenv("CAMERA_ID", "0"))
 cap = None
 if CAMERA_SOURCE == "device":
     cap = cv2.VideoCapture(CAMERA_ID)
-    if not cap.isOpened():
+    if cap.isOpened():
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FPS, 15)
+    else:
         print(f"[Startup] Warning: Camera index {CAMERA_ID} not available.")
         cap = None
 else:
@@ -116,35 +118,36 @@ else:
 
 VOICE_BUFFER = bytearray()
 VOICE_BUFFER_LOCK = threading.Lock()
-VOICE_AUDIO_THRESHOLD = 16000 * 1  # 1 second of audio before sending
+VOICE_AUDIO_THRESHOLD = 32000  # 1 second of audio (16kHz 16-bit = 32000 bytes)
+AUDIO_RECORDING_ACTIVE = False
+AUDIO_RECORDING_LOCK = threading.Lock()
 
 
 def _call_face_service(frame_bgr):
-    """Send frame to face analysis microservice, return (annotated_frame, emotion)."""
     try:
-        _, img_encoded = cv2.imencode('.jpg', frame_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+        # Resize for faster transfer/processing
+        h, w = frame_bgr.shape[:2]
+        max_dim = 320
+        if max(h, w) > max_dim:
+            scale = max_dim / max(h, w)
+            frame_bgr = cv2.resize(frame_bgr, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+        _, img_encoded = cv2.imencode('.jpg', frame_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
         resp = requests.post(
             f"{FACE_SERVICE_URL}/analyze",
             files={"frame": ("face.jpg", io.BytesIO(img_encoded.tobytes()), "image/jpeg")},
-            timeout=4
+            timeout=3
         )
         if resp.status_code == 200:
             data = resp.json()
             faces = data.get("faces", [])
-            emotion = faces[0].get("emotion", "Neutral") if faces else "Neutral"
-            b64_frame = data.get("annotated_frame_b64")
-            if b64_frame:
-                nparr = np.frombuffer(base64.b64decode(b64_frame), np.uint8)
-                annotated = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                return annotated, emotion
-        return None, None
+            return faces[0].get("emotion", "Neutral") if faces else None
+        return None
     except Exception as e:
         print(f"[FaceService] Call failed: {e}")
-        return None, None
+        return None
 
 
 def _call_voice_service(audio_bytes):
-    """Send audio to voice analysis microservice, return {emotion, transcript, confidence}."""
     try:
         resp = requests.post(
             f"{VOICE_SERVICE_URL}/analyze",
@@ -158,13 +161,15 @@ def _call_voice_service(audio_bytes):
     return {"emotion": "Neutral", "transcript": "", "confidence": 0}
 
 
-def _call_fusion_service(face_emotion, voice_emotion, biometric, stt_text):
-    """Send multimodal data to fusion LLM microservice."""
+def _call_fusion_service(face_emotion, voice_emotion, biometric, stt_text, history=None):
     try:
+        payload = {"face_emotion": face_emotion, "voice_emotion": voice_emotion,
+                   "biometric": biometric, "stt_text": stt_text}
+        if history:
+            payload["history"] = history
         resp = requests.post(
             f"{FUSION_SERVICE_URL}/fuse",
-            json={"face_emotion": face_emotion, "voice_emotion": voice_emotion,
-                  "biometric": biometric, "stt_text": stt_text},
+            json=payload,
             timeout=30
         )
         if resp.status_code == 200:
@@ -175,7 +180,6 @@ def _call_fusion_service(face_emotion, voice_emotion, biometric, stt_text):
 
 
 def _call_tts_service(text):
-    """Generate TTS via fusion/tts endpoint, return base64 audio."""
     try:
         resp = requests.post(
             f"{FUSION_SERVICE_URL}/tts/generate",
@@ -210,7 +214,6 @@ def get_state_payload():
             "running": running,
             "video_emotion": system_state["video_emotion"],
             "voice_emotion": system_state["voice_emotion"],
-            "biometric_data": system_state["biometric_data"],
             "stt_text": system_state["stt_text"],
             "llm_response": system_state["llm_response"],
             "distress": system_state["distress"],
@@ -218,11 +221,14 @@ def get_state_payload():
             "tts_audio_mime": system_state["tts_audio_mime"],
             "tts_audio_b64": system_state["tts_audio_b64"],
             "tts_generating": system_state["tts_generating"],
+            "health_face": system_state["health_face"],
+            "health_voice": system_state["health_voice"],
+            "health_llm": system_state["health_llm"],
         }
 
 
 def frame_reader():
-    global latest_raw_frame
+    global latest_raw_frame, raw_frame_version
     while True:
         if CAMERA_SOURCE == "device" and cap and cap.isOpened():
             ret, frame = cap.read()
@@ -230,42 +236,12 @@ def frame_reader():
                 frame = cv2.flip(frame, 1)
                 with frame_lock:
                     latest_raw_frame = frame
-        time.sleep(0.033)
-
-
-def display_worker():
-    global latest_display_frame, latest_annotated_frame, latest_annotated_time
-    while True:
-        if not running:
-            time.sleep(0.1)
-            continue
-
-        now = time.time()
-        with frame_lock:
-            frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
-            annotated_frame = latest_annotated_frame
-            annotated_age = now - latest_annotated_time if latest_annotated_frame is not None else 999
-
-        if frame is not None:
-            if annotated_frame is not None and annotated_age < 2.0:
-                display = annotated_frame.copy()
-            else:
-                display = frame.copy()
-                with state_lock:
-                    emotion_text = system_state.get("video_emotion", "")
-                if emotion_text:
-                    cv2.putText(display, f"Emotion: {emotion_text}", (10, 30),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-
-            with frame_lock:
-                latest_display_frame = display
-
-        time.sleep(0.033)
+                    raw_frame_version += 1
+        time.sleep(0.066)
 
 
 def video_worker():
-    """Send frames to face analysis microservice every 1 second."""
-    global system_state, latest_annotated_frame, latest_annotated_time
+    global system_state
     last_analysis = 0
     while True:
         if not running:
@@ -273,28 +249,23 @@ def video_worker():
             continue
 
         now = time.time()
-        if now - last_analysis < 1.0:
-            time.sleep(0.1)
+        if now - last_analysis < 0.3:
+            time.sleep(0.05)
             continue
 
         with frame_lock:
             frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
 
         if frame is not None:
-            annotated, emotion = _call_face_service(frame)
+            emotion = _call_face_service(frame)
             if emotion:
                 with state_lock:
                     system_state["video_emotion"] = emotion
-                if annotated is not None:
-                    with frame_lock:
-                        latest_annotated_frame = annotated
-                        latest_annotated_time = time.time()
             last_analysis = now
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 
 def voice_worker():
-    """Send buffered audio to voice analysis microservice."""
     global system_state, VOICE_BUFFER
     while True:
         if not running:
@@ -314,87 +285,43 @@ def voice_worker():
                     system_state["voice_emotion"] = result.get("emotion", "Neutral")
                     transcript = result.get("transcript", "")
                     if transcript:
-                        system_state["stt_text"] = transcript
+                        current = system_state.get("stt_text", "")
+                        combined = (current + " " + transcript).strip()
+                        system_state["stt_text"] = combined[-500:] if len(combined) > 500 else combined
+                        print(f"[STT] +{len(transcript)} chars: {transcript[:80]}")
 
-        time.sleep(1.0)
+        time.sleep(0.3)
 
 
-def biometric_worker():
-    """Mock biometrics (no hardware in web-api container)."""
+def health_watcher():
+    """Periodically check service health."""
     global system_state
-    hr = 72.0
-    spo2 = 98.0
     while True:
-        if not running:
-            time.sleep(0.5)
-            continue
-        hr += np.random.normal(0, 1)
-        spo2 += np.random.normal(0, 0.2)
-        hr = float(np.clip(hr, 50, 150))
-        spo2 = float(np.clip(spo2, 85, 100))
-        with state_lock:
-            system_state["biometric_data"] = f"HR: {hr:.1f}, SpO2: {spo2:.1f}%"
-        time.sleep(2.0)
-
-
-def ai_fusion_worker():
-    global system_state, current_logger
-    last_recommendation = ""
-    last_tts_time = 0
-    tts_repeat_interval = 5
-    tts_distress_threshold = int(os.getenv("TTS_DISTRESS_THRESHOLD", "0"))
-    while True:
-        if not running:
-            time.sleep(1)
-            continue
         try:
+            fr = requests.get(f"{FACE_SERVICE_URL}/health", timeout=2)
             with state_lock:
-                face_emotion = system_state["video_emotion"]
-                voice_emotion = system_state["voice_emotion"]
-                biometric = system_state["biometric_data"]
-                stt_text = system_state["stt_text"]
-
-            result = _call_fusion_service(face_emotion, voice_emotion, biometric, stt_text)
-
-            distress = result.get("distress", 0)
-            response = result.get("response", "I'm here with you.")
-
+                system_state["health_face"] = "ok" if fr.status_code == 200 else "err"
+        except Exception:
             with state_lock:
-                system_state["llm_response"] = response
-                system_state["distress"] = distress
-
-            now = time.time()
-            response_changed = response != last_recommendation
-            repeat_due = (now - last_tts_time) > tts_repeat_interval
-
-            if response and distress >= tts_distress_threshold and (response_changed or repeat_due):
-                with state_lock:
-                    system_state["tts_generating"] = True
-                    system_state["tts_audio_url"] = None
-                    system_state["tts_audio_b64"] = None
-                print(f"[AI Fusion] Triggering TTS for distress={distress}: {response[:80]}...")
-                audio_b64, mime = _call_tts_service(response)
-                if audio_b64:
-                    with state_lock:
-                        system_state["tts_audio_b64"] = audio_b64
-                        system_state["tts_audio_mime"] = mime
-                        system_state["tts_audio_url"] = f"/api/tts/latest?t={int(time.time())}"
-                with state_lock:
-                    system_state["tts_generating"] = False
-                last_recommendation = response
-                last_tts_time = now
-
-            if current_logger:
-                current_logger.log_event(system_state)
-
-        except Exception as e:
-            print(f"[AI Fusion] Error: {e}")
-            import traceback
-            traceback.print_exc()
-        time.sleep(2)
+                system_state["health_face"] = "off"
+        try:
+            vr = requests.get(f"{VOICE_SERVICE_URL}/health", timeout=2)
+            with state_lock:
+                system_state["health_voice"] = "ok" if vr.status_code == 200 else "err"
+        except Exception:
+            with state_lock:
+                system_state["health_voice"] = "off"
+        try:
+            lr = requests.get(f"{FUSION_SERVICE_URL}/health", timeout=2)
+            with state_lock:
+                system_state["health_llm"] = "ok" if lr.status_code == 200 else "err"
+        except Exception:
+            with state_lock:
+                system_state["health_llm"] = "off"
+        time.sleep(5)
 
 
-for target in [frame_reader, display_worker, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
+for target in [frame_reader, video_worker, voice_worker, health_watcher]:
     threading.Thread(target=target, daemon=True).start()
 
 
@@ -415,9 +342,9 @@ def start_session():
     with state_lock:
         system_state["video_emotion"] = "Starting..."
         system_state["voice_emotion"] = "Starting..."
-        system_state["biometric_data"] = "Starting..."
         system_state["llm_response"] = "Initializing..."
         system_state["distress"] = 0
+        system_state["conversation_history"] = []
     return {"status": "started"}
 
 
@@ -428,13 +355,13 @@ def stop_session():
     with state_lock:
         system_state["video_emotion"] = "Idle"
         system_state["voice_emotion"] = "Idle"
-        system_state["biometric_data"] = "Idle"
         system_state["llm_response"] = "Session stopped."
         system_state["distress"] = 0
         system_state["stt_text"] = ""
         system_state["tts_audio_url"] = None
         system_state["tts_audio_b64"] = None
         system_state["tts_generating"] = False
+        system_state["conversation_history"] = []
     return {"status": "stopped"}
 
 
@@ -451,7 +378,7 @@ def get_latest_tts():
 
 @app.post("/api/browser-frame")
 async def ingest_browser_frame(frame: UploadFile = File(...)):
-    global latest_raw_frame
+    global latest_raw_frame, raw_frame_version
     content = await frame.read()
     if not content:
         return {"status": "empty_frame"}
@@ -464,12 +391,163 @@ async def ingest_browser_frame(frame: UploadFile = File(...)):
     decoded = cv2.flip(decoded, 1)
     with frame_lock:
         latest_raw_frame = decoded
+        raw_frame_version += 1
     return {"status": "ok"}
+
+
+@app.post("/api/audio/start")
+def start_audio_recording():
+    global AUDIO_RECORDING_ACTIVE
+    with AUDIO_RECORDING_LOCK:
+        AUDIO_RECORDING_ACTIVE = True
+    with VOICE_BUFFER_LOCK:
+        VOICE_BUFFER.clear()
+    with state_lock:
+        system_state["stt_text"] = ""
+    return {"status": "recording_started"}
+
+
+@app.post("/api/audio/stop")
+def stop_audio_recording():
+    global AUDIO_RECORDING_ACTIVE, VOICE_BUFFER
+    with AUDIO_RECORDING_LOCK:
+        AUDIO_RECORDING_ACTIVE = False
+    # Process any remaining audio before clearing
+    with VOICE_BUFFER_LOCK:
+        remaining = bytes(VOICE_BUFFER) if len(VOICE_BUFFER) > 8000 else None
+        VOICE_BUFFER.clear()
+    if remaining:
+        try:
+            result = _call_voice_service(remaining)
+            if result:
+                with state_lock:
+                    transcript = result.get("transcript", "")
+                    if transcript:
+                        current = system_state.get("stt_text", "")
+                        combined = (current + " " + transcript).strip()
+                        system_state["stt_text"] = combined[-500:] if len(combined) > 500 else combined
+        except Exception as e:
+            print(f"[Audio] Final chunk processing error: {e}")
+    return {"status": "recording_stopped"}
+
+
+@app.post("/api/stt/transcribe")
+async def transcribe_audio(audio: UploadFile = File(...)):
+    """Full coordinated pipeline: STT + voice emotion + fusion + TTS in one shot."""
+    content = await audio.read()
+    if not content:
+        return {"transcript": ""}
+
+    content_type = audio.content_type or ""
+    raw_data = None
+
+    if "webm" in content_type or "ogg" in content_type or "mp4" in content_type:
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+                tmp.write(content)
+                tmp_path = tmp.name
+            out_path = tmp_path + ".raw"
+            cmd = ["ffmpeg", "-y", "-i", tmp_path,
+                   "-f", "s16le", "-acodec", "pcm_s16le",
+                   "-ar", "16000", "-ac", "1", out_path]
+            result = subprocess.run(cmd, capture_output=True, timeout=5)
+            if result.returncode == 0 and os.path.exists(out_path):
+                with open(out_path, "rb") as f:
+                    raw_data = f.read()
+                os.unlink(out_path)
+            os.unlink(tmp_path)
+        except Exception as e:
+            print(f"[STT] FFmpeg error: {e}")
+            return {"transcript": ""}
+    else:
+        raw_data = content
+
+    if not raw_data:
+        return {"transcript": ""}
+
+    # Step 1: STT + Voice Emotion (from this audio)
+    voice_result = _call_voice_service(raw_data)
+    transcript = voice_result.get("transcript", "").strip()
+    voice_emotion = voice_result.get("emotion", "Neutral")
+
+    # Step 2: Snapshot face emotion at THIS moment
+    with state_lock:
+        face_emotion = system_state["video_emotion"]
+        history_snapshot = list(system_state.get("conversation_history", []))
+
+    # Step 3: Update state with speech results immediately
+    with state_lock:
+        if transcript:
+            system_state["stt_text"] = transcript
+        system_state["voice_emotion"] = voice_emotion
+
+    # Step 4: Run fusion with coordinated data
+    tts_distress_threshold = int(os.getenv("TTS_DISTRESS_THRESHOLD", "0"))
+    if transcript:
+        print(f"[Pipeline] STT: {len(transcript)} chars: {transcript[:80]} | Face: {face_emotion} | Voice: {voice_emotion}")
+        result = _call_fusion_service(
+            face_emotion, voice_emotion, "N/A", transcript,
+            history=history_snapshot[-4:] if history_snapshot else None,
+        )
+        distress = result.get("distress", 0)
+        response = result.get("response", "I'm here with you.")
+
+        # Update history
+        with state_lock:
+            system_state["llm_response"] = response
+            system_state["distress"] = distress
+            hist = system_state.get("conversation_history", [])
+            hist.append({"user": transcript, "assistant": response})
+            system_state["conversation_history"] = hist[-10:]
+
+        # Step 5: TTS for the response
+        if response and distress >= tts_distress_threshold:
+            do_tts = False
+            with state_lock:
+                if not system_state["tts_generating"]:
+                    system_state["tts_generating"] = True
+                    system_state["tts_audio_url"] = None
+                    system_state["tts_audio_b64"] = None
+                    do_tts = True
+            if do_tts:
+                print(f"[Pipeline] TTS: {response[:80]}...")
+                audio_b64, mime = _call_tts_service(response)
+                if audio_b64:
+                    with state_lock:
+                        system_state["tts_audio_b64"] = audio_b64
+                        system_state["tts_audio_mime"] = mime
+                        system_state["tts_audio_url"] = f"/api/tts/latest?t={int(time.time())}"
+                with state_lock:
+                    system_state["tts_generating"] = False
+
+        if current_logger:
+            current_logger.log_event(system_state)
+
+    return {"transcript": transcript, "emotion": voice_emotion, "face_emotion": face_emotion}
+
+
+@app.post("/api/stt/clear")
+def clear_stt():
+    with state_lock:
+        system_state["stt_text"] = ""
+    return {"status": "cleared"}
+
+
+@app.post("/api/chat/clear")
+def clear_chat():
+    with state_lock:
+        system_state["conversation_history"] = []
+        system_state["llm_response"] = "Chat cleared. How can I help?"
+    return {"status": "cleared"}
 
 
 @app.post("/api/browser-audio")
 async def ingest_browser_audio(audio: UploadFile = File(...)):
     global VOICE_BUFFER
+    with AUDIO_RECORDING_LOCK:
+        if not AUDIO_RECORDING_ACTIVE:
+            return {"status": "not_recording"}
+
     content = await audio.read()
     if not content:
         return {"status": "empty_audio"}
@@ -518,35 +596,6 @@ async def ingest_browser_audio(audio: UploadFile = File(...)):
     return {"status": "ok"}
 
 
-def generate_mjpeg():
-    blank = np.zeros((360, 480, 3), dtype=np.uint8)
-    blank[:] = (5, 5, 6)
-    cv2.putText(blank, "Start a session to begin", (60, 180),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (100, 100, 110), 1)
-    cv2.putText(blank, "Camera feed will appear here", (50, 220),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (70, 70, 80), 1)
-    _, blank_jpg = cv2.imencode('.jpg', blank, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-    blank_bytes = blank_jpg.tobytes()
-
-    while True:
-        with frame_lock:
-            frame = latest_display_frame if latest_display_frame is not None else latest_raw_frame
-        if frame is not None:
-            ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
-            if ret:
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-        else:
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + blank_bytes + b'\r\n')
-        time.sleep(0.033)
-
-
-@app.get("/video_feed")
-def video_feed():
-    return StreamingResponse(generate_mjpeg(), media_type="multipart/x-mixed-replace; boundary=frame")
-
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -569,6 +618,8 @@ def get_history():
     try:
         import pandas as pd
         df = pd.read_csv(latest)
+        if 'biometric_data' in df.columns:
+            df = df.drop(columns=['biometric_data'])
         df = df.tail(100)
         df = df.where(pd.notnull(df), None)
         df = df.replace([float('inf'), float('-inf')], None)
@@ -586,7 +637,8 @@ def shutdown_event():
 
 
 static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 if __name__ == "__main__":
     import uvicorn

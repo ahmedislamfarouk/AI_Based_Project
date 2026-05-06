@@ -13,23 +13,22 @@ class SessionLogger:
     def _init_csv(self):
         with open(self.filename, mode='w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(["timestamp", "video_emotion", "voice_emotion", "biometric_data", "distress_level", "llm_response", "stt_text"])
+            writer.writerow(["timestamp", "video_emotion", "voice_emotion", "distress_level", "llm_response", "stt_text"])
 
     def log_event(self, state):
         """Logs the current system state to CSV."""
         try:
             timestamp = datetime.now().isoformat()
             video = state.get("video_emotion", "N/A") or "N/A"
-            voice = state.get("voice_emotion", state.get("voice_arousal", "N/A")) or "N/A"
-            biometric = state.get("biometric_data", "N/A") or "N/A"
+            voice = state.get("voice_emotion", "N/A") or "N/A"
             stt = state.get("stt_text", "") or ""
-            
+
             distress = state.get("distress", 0)
             if distress is None:
                 distress = 0
-            
+
             rec = state.get("llm_response", "N/A") or "N/A"
-            
+
             if rec == "N/A" and "ai_recommendation" in state:
                 blob = state["ai_recommendation"]
                 if isinstance(blob, dict):
@@ -40,7 +39,7 @@ class SessionLogger:
 
             with open(self.filename, mode='a', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow([timestamp, video, voice, biometric, distress, rec, stt])
+                writer.writerow([timestamp, video, voice, distress, rec, stt])
         except Exception as e:
             print(f"Logging Error: {e}")
 

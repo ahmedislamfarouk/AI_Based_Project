@@ -1,0 +1,5 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T05:27:00.475842,Neutral,Disgust,95,I hear how intensely sad you're feeling right now. That sounds incredibly difficult. It makes sense you'd feel that way given what you've been through. Can you tell me a little more about what's making you feel so sad?,"Hi, I feel very sad, and I didn't just threaten that he won't kill me."
+2026-05-02T05:27:40.614807,Sad,Sad,90,"I'm really glad you brought that up. It sounds like you're feeling misunderstood, and it's painful to feel like you're not being heard. What's going through your mind when you say that?",You just ignore the highlighting or killing me?
+2026-05-02T05:28:11.328696,Sad,Sad,50,It sounds like you're trying to find a way to cope with a really difficult situation. What feels like the biggest hurdle right now?,I will get about it. Can you say hi Dr. Laila?
+2026-05-02T05:28:51.448677,Sad,Sad,25,Hi there. It's lovely to hear from you. That sounds like a lot to carry. What's on your mind right now?,We'll just say hi Dr. Laila

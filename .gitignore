@@ -43,3 +43,9 @@ labs/
 !labs/
 !labs/lab8/
 !labs/lab8/intelligent_data_query_llama.py
+
+*.deb
+*.wav
+*.png
+hf_cache/
+models/

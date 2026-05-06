@@ -22,8 +22,8 @@ services:
       - NVIDIA_VISIBLE_DEVICES=
       - CUDA_VISIBLE_DEVICES=-1
       - TF_CPP_MIN_LOG_LEVEL=3
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
@@ -38,8 +38,9 @@ services:
     environment:
       - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-    ports:
-      - "8002:8002"
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+    expose:
+      - "8002"
     volumes:
       - ./models:/app/models
     runtime: nvidia
@@ -54,28 +55,32 @@ services:
     build:
       context: .
       dockerfile: services/fusion_llm/Dockerfile
+    env_file:
+      - .env
     environment:
-      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-0}
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-      - NVIDIA_DISABLE_REQUIRE=1
       - LLM_MODE=${LLM_MODE:-local}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - TTS_BACKEND=${TTS_BACKEND:-gemini}
-      - GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL:-gemini-3.1-flash-tts-preview}
-    ports:
-      - "8003:8003"
+      - LLM_GPU_DEVICES=${LLM_GPU_DEVICES:-0,1}
+      - LLM_THREADS_PER_GPU=${LLM_THREADS_PER_GPU:-5}
+      - LLM_MODEL_PATH=LLM/model/therapist-gemma-q4_K_M.gguf
+      - NVIDIA_VISIBLE_DEVICES=3,4
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - TTS_BACKEND=${TTS_BACKEND:-qwen}
+      - QWEN_TTS_MODEL=Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+      - QWEN_TTS_SPEAKER=Ryan
+      - QWEN_TTS_LANGUAGE=English
+      - QWEN_TTS_DEVICE=cuda:0
     volumes:
       - ./LLM/model:/app/LLM/model
-      - ./LLM/faiss_index:/app/LLM/faiss_index
-      - ./models:/app/models
+      - ./hf_cache:/root/.cache/huggingface
+    expose:
+      - "8003"
     runtime: nvidia
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
-      interval: 60s
+      interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
 
   # ─── API Gateway (orchestrator) ──────────────────────────────────────────
 

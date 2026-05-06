@@ -1,0 +1,6 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T11:47:34.425222,Neutral,Happy,15,"Hi there! It sounds like you're navigating a lot right now, and it's okay to not have all the answers. I'm here to listen without judgment.","I hope because when I find it...  Uh, hi.  How are you, mother for good?  Yeah, I have no idea."
+2026-05-02T11:48:18.808075,Neutral,Calm,25,It's understandable to feel that way after a long period of time. Sometimes the weight of the past can feel heavy. What's been on your mind lately?,But it's already been a long time.
+2026-05-02T11:48:56.393782,Neutral,Anger,75,"I hear that you're feeling angry and frustrated. It takes courage to express those feelings. It sounds like you're carrying a lot, and I'm here to help you process that.","Uh, can you say fuck you, please?"
+2026-05-02T11:50:38.418625,Neutral,Sad,60,Hi X!,Just say football.
+2026-05-02T11:51:39.029231,Fear,Happy,25,I see you're curious about the list. I can definitely help you find a cap if you'd like. Let's explore that together.,Is there a cap in the list?

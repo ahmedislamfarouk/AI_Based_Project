@@ -1,0 +1,58 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-01T09:20:41.413976,Neutral,Disgust,"HR: 70.5, SpO2: 99.9%",50,I'm here with you.,Hello.
+2026-05-01T09:20:44.944822,Neutral,Fear,"HR: 71.6, SpO2: 100.0%",50,I'm here with you.,Hello.
+2026-05-01T09:20:47.946577,Sad,Surprised,"HR: 71.1, SpO2: 100.0%",50,I'm here with you.,Hello.
+2026-05-01T09:20:50.948363,Sad,Fear,"HR: 69.6, SpO2: 100.0%",50,I'm here with you.,Hello.
+2026-05-01T09:20:53.950863,Sad,Sad,"HR: 69.2, SpO2: 99.9%",50,I'm here with you.,"Hello, so can you?"
+2026-05-01T09:20:56.953722,Neutral,Sad,"HR: 68.3, SpO2: 99.4%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:20:59.956565,Sad,Sad,"HR: 67.8, SpO2: 99.7%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:02.958694,Sad,Sad,"HR: 68.1, SpO2: 99.6%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:05.961136,Sad,Fear,"HR: 69.5, SpO2: 99.7%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:08.963037,Sad,Fear,"HR: 69.0, SpO2: 99.5%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:11.966407,Sad,Fear,"HR: 69.1, SpO2: 99.5%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:14.968631,Sad,Fear,"HR: 68.8, SpO2: 99.4%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:17.972884,Sad,Fear,"HR: 68.9, SpO2: 99.4%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:20.975466,Sad,Fear,"HR: 66.8, SpO2: 99.5%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:23.978027,Sad,Fear,"HR: 66.1, SpO2: 99.2%",50,I'm here with you.,Can you tell me something nice?
+2026-05-01T09:21:59.254198,Neutral,Fear,"HR: 58.0, SpO2: 99.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:02.798196,Neutral,Fear,"HR: 59.7, SpO2: 99.2%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:05.800691,Neutral,Fear,"HR: 58.9, SpO2: 99.2%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:08.802391,Neutral,Fear,"HR: 63.2, SpO2: 98.9%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:11.804572,Neutral,Fear,"HR: 62.2, SpO2: 99.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:14.808376,Neutral,Fear,"HR: 63.0, SpO2: 98.6%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:17.810724,Neutral,Fear,"HR: 63.7, SpO2: 98.6%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:20.812743,Neutral,Fear,"HR: 64.6, SpO2: 98.4%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:23.815254,Neutral,Fear,"HR: 63.6, SpO2: 98.5%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:26.817335,Neutral,Fear,"HR: 63.3, SpO2: 98.5%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:29.826749,Neutral,Fear,"HR: 63.9, SpO2: 98.3%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:32.829205,Neutral,Fear,"HR: 63.5, SpO2: 98.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:35.831869,Neutral,Fear,"HR: 63.6, SpO2: 98.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:22:38.834975,Neutral,Fear,"HR: 62.2, SpO2: 98.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:14.525133,Neutral,Fear,"HR: 65.6, SpO2: 97.2%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:18.099266,Neutral,Fear,"HR: 63.9, SpO2: 97.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:21.103109,Neutral,Fear,"HR: 64.6, SpO2: 96.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:24.106908,Neutral,Fear,"HR: 65.6, SpO2: 96.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:27.112120,Neutral,Fear,"HR: 63.0, SpO2: 96.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:30.114102,Neutral,Fear,"HR: 62.5, SpO2: 95.7%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:33.116287,Neutral,Fear,"HR: 61.5, SpO2: 95.5%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:36.118281,Neutral,Fear,"HR: 63.4, SpO2: 95.2%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:39.120145,Neutral,Fear,"HR: 64.1, SpO2: 95.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:42.123405,Neutral,Fear,"HR: 64.4, SpO2: 94.7%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:45.125437,Neutral,Fear,"HR: 63.4, SpO2: 94.9%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:48.127583,Neutral,Fear,"HR: 62.9, SpO2: 94.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:51.129396,Neutral,Fear,"HR: 62.3, SpO2: 94.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:23:54.132274,Neutral,Fear,"HR: 62.3, SpO2: 94.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:29.741856,Neutral,Fear,"HR: 66.0, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:33.289699,Neutral,Fear,"HR: 66.9, SpO2: 95.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:36.293342,Neutral,Fear,"HR: 66.7, SpO2: 95.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:39.296337,Neutral,Fear,"HR: 65.2, SpO2: 95.2%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:42.301420,Neutral,Fear,"HR: 64.8, SpO2: 95.3%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:45.304501,Neutral,Fear,"HR: 62.2, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:48.307455,Neutral,Fear,"HR: 64.5, SpO2: 94.8%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:51.309865,Neutral,Fear,"HR: 63.3, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:54.313120,Neutral,Fear,"HR: 64.4, SpO2: 94.9%",50,I'm here with you.,Thank you.
+2026-05-01T09:24:57.316929,Neutral,Fear,"HR: 64.0, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:25:00.318841,Neutral,Fear,"HR: 63.6, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:25:03.320627,Neutral,Fear,"HR: 62.8, SpO2: 95.1%",50,I'm here with you.,Thank you.
+2026-05-01T09:25:06.322658,Neutral,Fear,"HR: 62.4, SpO2: 95.0%",50,I'm here with you.,Thank you.
+2026-05-01T09:25:09.325314,Neutral,Fear,"HR: 63.6, SpO2: 94.7%",50,I'm here with you.,Thank you.

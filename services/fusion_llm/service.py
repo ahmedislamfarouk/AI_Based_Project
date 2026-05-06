@@ -3,7 +3,6 @@ import sys
 import time
 import json
 import base64
-import threading
 from pathlib import Path
 from datetime import datetime
 
@@ -15,16 +14,16 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from core.model.inference import FusionAgent
+from core.model.inference import FusionAgent, LocalFusionAgent
 from modules.output.tts_engine import TTSEngine
 
 app = FastAPI(title="Fusion LLM Service", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-fusion_agent = None
+groq_agent = None
+local_agent = None
 tts_engine = None
 TTSEngineClass = TTSEngine
-_inference_lock = threading.Lock()
 
 TTS_OUTPUT_DIR = Path("data/tts")
 TTS_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -41,19 +40,43 @@ def _save_pcm_as_wav(filepath, pcm_bytes, channels=1, rate=24000, sample_width=2
 
 @app.on_event("startup")
 def startup():
-    global fusion_agent, tts_engine
+    global groq_agent, local_agent, tts_engine
     print("[FusionService] Loading AI models...")
-    fusion_agent = FusionAgent()
+
+    mode = os.getenv("LLM_MODE", "api").strip().lower()
+    if mode == "local":
+        try:
+            local_agent = LocalFusionAgent()
+            print("[FusionService] Local GGUF model ready.")
+        except Exception as e:
+            print(f"[FusionService] Local model failed to load: {e}")
+            print("[FusionService] Falling back to Groq API...")
+            groq_agent = FusionAgent()
+    else:
+        groq_agent = FusionAgent()
+
     tts_engine = TTSEngine()
     print("[FusionService] Ready.")
 
 
+def _get_agent():
+    if groq_agent is not None:
+        return groq_agent
+    if local_agent is not None:
+        return local_agent
+    return None
+
+
 @app.get("/health")
 def health():
+    agent = _get_agent()
+    if agent is None:
+        return {"status": "starting"}
     return {
         "status": "ok",
-        "local_llm_loaded": fusion_agent._local_llm is not None if fusion_agent else False,
-        "groq_available": fusion_agent.llm is not None if fusion_agent else False,
+        "mode": "local" if local_agent else "api",
+        "groq_available": groq_agent is not None and getattr(groq_agent, "llm", None) is not None,
+        "local_available": local_agent is not None,
         "tts_backend": os.getenv("TTS_BACKEND", "gemini"),
     }
 
@@ -64,22 +87,23 @@ def fuse_sensors(data: dict):
     Fuse multimodal inputs and return therapist response.
     Body: {"face_emotion": "Happy", "voice_emotion": "Neutral", "biometric": "HR: 72", "stt_text": "I feel good"}
     """
-    if fusion_agent is None:
+    agent = _get_agent()
+    if agent is None:
         return JSONResponse(content={"error": "fusion_not_ready"}, status_code=503)
 
     face_emotion = data.get("face_emotion", "Neutral")
     voice_emotion = data.get("voice_emotion", "Neutral")
     biometric = data.get("biometric", "N/A")
     stt_text = data.get("stt_text", "")
+    history = data.get("history", None)
 
-    with _inference_lock:
-        try:
-            result = fusion_agent.fuse_inputs(face_emotion, voice_emotion, biometric, stt_text)
-            if not isinstance(result, dict):
-                result = {"distress": 50, "response": str(result)}
-            return result
-        except Exception as e:
-            return JSONResponse(content={"error": str(e)}, status_code=500)
+    try:
+        result = agent.fuse_inputs(face_emotion, voice_emotion, biometric, stt_text, history=history)
+        if not isinstance(result, dict):
+            result = {"distress": 50, "response": str(result)}
+        return result
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.post("/tts/generate")

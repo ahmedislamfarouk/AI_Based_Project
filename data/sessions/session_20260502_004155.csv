@@ -1,0 +1,4 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-02T00:41:56.598526,Angry,Starting...,"HR: 75.2, SpO2: 97.7%",65,"I detect a strong current of anger in your facial expression, and the voice onset suggests a shift towards agitation; it seems you are experiencing a significant emotional intensity right now.",
+2026-05-02T00:42:00.418945,Neutral,Starting...,"HR: 72.0, SpO2: 97.8%",65,"I detect a strong current of anger in your facial expression, which is building into a more agitated vocal tone. Your heart rate is elevated, suggesting heightened physiological arousal, and I sense a potential for escalation.",
+2026-05-02T00:42:04.236879,Neutral,Starting...,"HR: 70.6, SpO2: 98.2%",25,"I detect a subtle shift in your vocal tone, suggesting a nascent feeling of unease beneath a composed exterior. It appears you're navigating internal complexities without fully articulating them.",

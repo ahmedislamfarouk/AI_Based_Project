@@ -1,0 +1,3 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-02T01:33:08.761732,Starting...,Starting...,Starting...,45,"The intensity of the language you're using, while seemingly calm in tone, suggests a significant underlying frustration with the demands of your current situation. It's clear you're feeling overwhelmed by the volume of tasks.",
+2026-05-02T01:33:11.762090,Angry,Starting...,"HR: 73.4, SpO2: 97.7%",45,"The intensity of the language you're using, while seemingly calm in tone, suggests a significant underlying frustration with the demands of your current situation. It's clear you're feeling overwhelmed by the volume of tasks.",

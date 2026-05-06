@@ -1,0 +1,4 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-01T17:27:10.639152,Angry,Sad,"HR: 74.9, SpO2: 98.2%",50,I'm here with you.,You
+2026-05-01T17:27:42.923421,Neutral,Fear,"HR: 78.4, SpO2: 98.7%",50,I'm here with you.,I have a lot of food.
+2026-05-01T17:28:15.186668,Angry,Sad,"HR: 82.4, SpO2: 98.9%",50,I'm here with you.,You

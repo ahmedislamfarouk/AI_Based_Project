@@ -1,0 +1,27 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T03:21:37.213009,Starting...,Starting...,0,Initializing...,
+2026-05-02T03:21:40.213386,Sad,Starting...,0,Chat history cleared. How can I help you?,
+2026-05-02T03:21:43.213813,Neutral,Starting...,0,Chat history cleared. How can I help you?,
+2026-05-02T03:21:46.214162,Angry,Starting...,0,Chat history cleared. How can I help you?,
+2026-05-02T03:21:49.214568,Sad,Starting...,0,Chat history cleared. How can I help you?,
+2026-05-02T03:22:18.038468,Sad,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:21.038767,Neutral,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:24.039070,Neutral,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:27.039376,Angry,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:30.039735,Angry,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:33.040033,Angry,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:36.040323,Neutral,Calm,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,"Hi, how are you today?"
+2026-05-02T03:22:39.040608,Sad,Sad,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,
+2026-05-02T03:22:42.040918,Sad,Sad,21,It's lovely to hear from you. It sounds like you're feeling a bit down. Is there anything you'd like to talk about?,
+2026-05-02T03:22:54.333190,Angry,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,"I'm feeling very, very, very sad today."
+2026-05-02T03:22:57.333529,Angry,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,"I'm feeling very, very, very sad today."
+2026-05-02T03:23:00.333997,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,"I'm feeling very, very, very sad today."
+2026-05-02T03:23:03.334387,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,"I'm feeling very, very, very sad today."
+2026-05-02T03:23:06.334673,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,"I'm feeling very, very, very sad today."
+2026-05-02T03:23:09.335019,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:12.335414,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:15.335789,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:18.336182,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:21.336557,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:24.337250,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,
+2026-05-02T03:23:27.337616,Neutral,Calm,40,It takes courage to share that you're feeling so sad. What's bringing that on today?,

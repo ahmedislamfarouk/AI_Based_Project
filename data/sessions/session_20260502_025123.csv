@@ -1,0 +1,13 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T02:51:24.584319,Starting...,Starting...,0,Initializing...,
+2026-05-02T02:51:27.584730,Neutral,Starting...,0,Initializing...,
+2026-05-02T02:51:30.585109,Neutral,Starting...,0,Initializing...,
+2026-05-02T02:51:33.585624,Angry,Starting...,0,Initializing...,
+2026-05-02T02:52:05.156607,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:08.156929,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:11.157359,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:14.157725,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:17.158146,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:20.158514,Neutral,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:23.158854,Sad,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker
+2026-05-02T02:52:26.159197,Angry,Anger,75,"I hear you, and it sounds like you're feeling a lot of frustration right now. Is there something specific that's making you feel this way?",with some of the high how are you today mother fucker

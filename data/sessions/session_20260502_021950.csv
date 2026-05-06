@@ -1,0 +1,165 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-02T02:19:50.883999,Starting...,Starting...,Starting...,0,Initializing...,
+2026-05-02T02:19:53.884226,Sad,Starting...,"HR: 71.2, SpO2: 98.2%",0,Initializing...,
+2026-05-02T02:19:56.884602,Neutral,Starting...,"HR: 72.5, SpO2: 97.9%",0,Initializing...,
+2026-05-02T02:19:59.884965,Neutral,Starting...,"HR: 73.9, SpO2: 97.6%",0,Initializing...,
+2026-05-02T02:20:24.746284,Neutral,Calm,"HR: 69.4, SpO2: 99.0%",20,"Hi there! I'm doing well, thanks for asking. How are you feeling today?","Hi, how are you today?"
+2026-05-02T02:20:28.167210,Neutral,Calm,"HR: 69.2, SpO2: 99.0%",20,It's nice to hear from you! I hope you're having a peaceful day. Is there anything on your mind?,"Hi, how are you today?"
+2026-05-02T02:20:32.474849,Happy,Calm,"HR: 68.5, SpO2: 98.9%",20,You seem peaceful today! I hope you're feeling good. Anything you'd like to share?,"Hi, how are you today?"
+2026-05-02T02:20:35.762333,Neutral,Calm,"HR: 69.2, SpO2: 99.3%",20,You seem calm and at ease. How are you feeling today?,"Hi, how are you today?"
+2026-05-02T02:20:39.073431,Neutral,Calm,"HR: 70.9, SpO2: 99.5%",20,You seem peaceful today! I hope you're feeling good. Anything you'd like to share?,
+2026-05-02T02:20:42.409305,Neutral,Calm,"HR: 71.8, SpO2: 99.6%",20,You seem peaceful today! I hope you're feeling good. Anything you'd like to share?,
+2026-05-02T02:20:45.749081,Neutral,Calm,"HR: 70.7, SpO2: 99.5%",20,You seem peaceful today! I hope you're feeling good. Anything you'd like to share?,
+2026-05-02T02:21:03.117336,Neutral,Surprised,"HR: 70.0, SpO2: 98.9%",20,That's so kind of you to do! It's lovely to have a clear message. How are you feeling about having this conversation with Dr. Lyla?,Can you say hello to Dr. Lyla? She will listen to the conversation later.
+2026-05-02T02:21:06.541795,Neutral,Surprised,"HR: 70.6, SpO2: 98.8%",25,It's great you're thinking of Dr. Lyla. Is there anything specific you're hoping to discuss with her?,Can you say hello to Dr. Lyla? She will listen to the conversation later.
+2026-05-02T02:21:09.897325,Neutral,Surprised,"HR: 71.1, SpO2: 98.9%",20,You seem a little on edge. Is there anything I can do to help ease your mind right now?,Can you say hello to Dr. Lyla? She will listen to the conversation later.
+2026-05-02T02:21:13.233263,Neutral,Surprised,"HR: 71.2, SpO2: 98.8%",40,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:16.542588,Neutral,Happy,"HR: 72.0, SpO2: 98.7%",20,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:19.856448,Angry,Happy,"HR: 73.6, SpO2: 99.2%",40,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:23.189349,Neutral,Happy,"HR: 74.2, SpO2: 99.3%",25,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:26.500650,Neutral,Happy,"HR: 73.0, SpO2: 99.1%",20,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:29.812607,Neutral,Happy,"HR: 72.0, SpO2: 99.2%",25,You seem a little on edge. Is there anything I can do to help ease your mind right now?,
+2026-05-02T02:21:53.061789,Angry,Fear,"HR: 71.3, SpO2: 99.1%",40,It sounds like you're feeling a lot of pressure right now. What's making it feel so overwhelming?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:21:56.482076,Neutral,Fear,"HR: 71.1, SpO2: 99.1%",40,It makes sense that you'd feel pressure with a project like this. What part of it is feeling the most challenging right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:21:59.865563,Neutral,Fear,"HR: 69.5, SpO2: 98.8%",40,You seem to be carrying a lot on your shoulders. Is there anything specific about the project you'd like to explore further?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:03.214113,Neutral,Fear,"HR: 70.2, SpO2: 98.8%",40,You seem to be carrying a lot on your shoulders. Is there anything specific about the project you'd like to explore further?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:06.569019,Angry,Fear,"HR: 68.6, SpO2: 98.7%",60,You seem to be carrying a lot on your shoulders. Is there anything specific about the project you'd like to explore further?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:09.888567,Angry,Fear,"HR: 72.2, SpO2: 98.9%",60,"You seem overwhelmed, and it's understandable to feel that way. How are you holding up with everything?","Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:13.260673,Angry,Fear,"HR: 72.8, SpO2: 98.9%",60,You seem to be carrying a lot on your shoulders. Is there anything specific about the project you'd like to explore further?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:16.635075,Neutral,Fear,"HR: 73.1, SpO2: 98.7%",40,You seem to be carrying a lot on your shoulders. Is there anything specific about the project you'd like to explore further?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:19.943027,Neutral,Fear,"HR: 74.1, SpO2: 98.3%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:23.214242,Neutral,Fear,"HR: 76.9, SpO2: 98.5%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:26.519508,Neutral,Fear,"HR: 76.8, SpO2: 98.5%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:29.785221,Neutral,Fear,"HR: 77.7, SpO2: 98.4%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:33.078744,Neutral,Fear,"HR: 78.4, SpO2: 98.3%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:36.350354,Neutral,Fear,"HR: 79.7, SpO2: 98.2%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:39.618209,Neutral,Fear,"HR: 81.1, SpO2: 98.3%",61,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:42.889220,Neutral,Fear,"HR: 82.0, SpO2: 98.1%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:46.161966,Angry,Fear,"HR: 82.1, SpO2: 97.7%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:49.465801,Angry,Fear,"HR: 80.5, SpO2: 97.3%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:52.765326,Happy,Fear,"HR: 79.0, SpO2: 97.3%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:56.075975,Happy,Fear,"HR: 77.1, SpO2: 97.2%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:22:59.376055,Happy,Fear,"HR: 78.9, SpO2: 97.0%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:02.642235,Sad,Fear,"HR: 79.6, SpO2: 97.0%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:05.910393,Sad,Fear,"HR: 79.6, SpO2: 97.3%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:09.212607,Sad,Fear,"HR: 81.3, SpO2: 96.9%",61,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:12.488698,Happy,Fear,"HR: 81.6, SpO2: 97.3%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:15.788314,Neutral,Fear,"HR: 81.6, SpO2: 97.6%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:19.057073,Neutral,Fear,"HR: 81.6, SpO2: 97.6%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:22.327037,Neutral,Fear,"HR: 81.7, SpO2: 97.7%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:25.601908,Neutral,Fear,"HR: 84.1, SpO2: 98.0%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:28.870304,Neutral,Fear,"HR: 82.0, SpO2: 98.2%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:32.171338,Neutral,Fear,"HR: 84.6, SpO2: 97.9%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:35.436389,Neutral,Fear,"HR: 82.8, SpO2: 98.1%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:38.739358,Angry,Fear,"HR: 82.8, SpO2: 98.2%",60,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:42.010781,Neutral,Fear,"HR: 82.5, SpO2: 98.6%",40,You seem a little overwhelmed. How are you feeling about the project right now?,"Honestly, I feel pressure, this conversation, just app, even you, it's just a piece of the project that Laila asked us to do."
+2026-05-02T02:23:45.283569,Neutral,Sad,"HR: 82.1, SpO2: 98.4%",40,You seem a little overwhelmed. How are you feeling about the project right now?,
+2026-05-02T02:23:48.583468,Neutral,Sad,"HR: 81.8, SpO2: 98.5%",60,You seem a little overwhelmed. How are you feeling about the project right now?,
+2026-05-02T02:23:51.855234,Neutral,Sad,"HR: 81.7, SpO2: 98.8%",60,You seem a little overwhelmed. How are you feeling about the project right now?,
+2026-05-02T02:24:09.937712,Angry,Sad,"HR: 78.7, SpO2: 100.0%",40,That's a really powerful question. It takes courage to ask that. What's making you feel that way about the project?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:13.362911,Happy,Sad,"HR: 77.3, SpO2: 99.8%",45,It sounds like you're grappling with some difficult feelings about the project. Is there anything specific you'd like to explore further?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:16.776659,Happy,Sad,"HR: 77.4, SpO2: 99.7%",40,You seem to be carrying a lot right now. It sounds like you're feeling conflicted about the project. What's on your mind?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:20.179024,Neutral,Sad,"HR: 76.0, SpO2: 100.0%",40,You seem to be carrying a lot right now. It sounds like you're feeling conflicted about the project. What's on your mind?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:23.468256,Angry,Sad,"HR: 75.2, SpO2: 100.0%",60,You seem upset. Want to talk about what's going on?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:26.739779,Angry,Sad,"HR: 76.6, SpO2: 100.0%",60,I notice you seem a bit down. Is there anything specific weighing on you?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:30.046460,Neutral,Sad,"HR: 76.7, SpO2: 100.0%",40,I notice you seem a bit down. Is there anything specific weighing on you?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:33.349168,Sad,Sad,"HR: 74.1, SpO2: 100.0%",40,I see you're feeling a little low. How are you doing today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:36.621332,Sad,Sad,"HR: 73.1, SpO2: 99.9%",40,I see you're feeling a little low. How are you doing today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:39.889136,Angry,Sad,"HR: 72.7, SpO2: 99.7%",40,I see you're feeling a little low. How are you doing today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:43.182853,Angry,Sad,"HR: 72.5, SpO2: 99.5%",40,I see you're feeling a little low. How are you doing today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:46.499390,Angry,Sad,"HR: 74.8, SpO2: 99.7%",40,You seem to be carrying a lot right now. Is there anything specific weighing on your mind?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:49.784121,Angry,Sad,"HR: 72.5, SpO2: 99.7%",60,You seem upset. Want to talk about what's going on?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:53.037724,Angry,Sad,"HR: 73.2, SpO2: 100.0%",60,You seem upset. Want to talk about what's going on?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:56.337028,Neutral,Sad,"HR: 74.4, SpO2: 99.8%",40,You seem a little down. Is there anything on your mind that you'd like to share?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:24:59.665593,Neutral,Sad,"HR: 73.6, SpO2: 99.7%",40,You seem a little down. Is there anything on your mind that you'd like to share?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:02.918600,Neutral,Sad,"HR: 75.5, SpO2: 99.7%",40,I notice you seem a little down. How are you feeling today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:06.159844,Neutral,Sad,"HR: 77.0, SpO2: 99.5%",40,You seem a little down. How are you feeling today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:09.457762,Neutral,Sad,"HR: 76.9, SpO2: 99.8%",40,I see you're feeling a little low. Is there anything specific on your mind right now?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:12.809038,Neutral,Sad,"HR: 76.5, SpO2: 99.2%",40,I notice you're being quiet. It sounds like you might be carrying something. Is there anything you'd like to share?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:16.047830,Neutral,Sad,"HR: 75.7, SpO2: 99.2%",40,You seem a little down. How are you doing today?,"Tell me more about you yourself, what are you and how could you hurt me?"
+2026-05-02T02:25:19.317865,Sad,Sad,"HR: 75.3, SpO2: 99.5%",40,You seem a little down. How are you doing today?,
+2026-05-02T02:25:22.558791,Sad,Sad,"HR: 75.0, SpO2: 99.5%",40,You seem a little down. How are you doing today?,
+2026-05-02T02:25:25.817591,Angry,Fear,"HR: 75.7, SpO2: 99.1%",40,You seem upset. Want to talk about what's going on?,So tell me more about you.
+2026-05-02T02:25:41.596829,Sad,Fear,"HR: 75.1, SpO2: 99.5%",40,It sounds like you're feeling vulnerable. What's prompting you to share more about yourself right now?,So tell me more about you.
+2026-05-02T02:25:44.943489,Angry,Fear,"HR: 76.5, SpO2: 99.5%",45,I understand you're looking for connection. What's on your mind as you explore that?,So tell me more about you.
+2026-05-02T02:25:48.252099,Angry,Fear,"HR: 77.1, SpO2: 99.5%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:25:51.523665,Angry,Fear,"HR: 76.6, SpO2: 100.0%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:25:54.794493,Angry,Fear,"HR: 77.0, SpO2: 100.0%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:25:58.095847,Angry,Fear,"HR: 78.0, SpO2: 99.6%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:26:01.398317,Angry,Fear,"HR: 78.2, SpO2: 100.0%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:26:04.665058,Angry,Fear,"HR: 77.7, SpO2: 99.7%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:26:07.965720,Angry,Fear,"HR: 79.2, SpO2: 99.6%",60,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:26:11.236251,Angry,Fear,"HR: 77.6, SpO2: 99.6%",40,You seem to be navigating a lot right now. How are you holding up?,So tell me more about you.
+2026-05-02T02:26:14.589504,Neutral,Fear,"HR: 77.4, SpO2: 99.7%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:17.915033,Neutral,Fear,"HR: 78.0, SpO2: 100.0%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:21.271049,Angry,Fear,"HR: 78.3, SpO2: 100.0%",60,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:24.588787,Angry,Fear,"HR: 78.7, SpO2: 100.0%",60,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:27.906071,Neutral,Fear,"HR: 78.5, SpO2: 99.7%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:31.255453,Neutral,Fear,"HR: 78.5, SpO2: 99.5%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:34.572211,Sad,Fear,"HR: 78.6, SpO2: 99.8%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:37.887049,Sad,Fear,"HR: 78.7, SpO2: 99.7%",40,You seem a little overwhelmed. Is there anything specific on your mind that you'd like to talk about?,So tell me more about you.
+2026-05-02T02:26:41.137294,Sad,Fear,"HR: 79.4, SpO2: 99.7%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:26:44.383421,Sad,Fear,"HR: 77.9, SpO2: 99.7%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:26:47.658054,Sad,Fear,"HR: 74.8, SpO2: 99.7%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:26:50.937030,Sad,Fear,"HR: 73.1, SpO2: 100.0%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:26:54.210760,Sad,Fear,"HR: 74.8, SpO2: 100.0%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:26:57.489529,Neutral,Fear,"HR: 74.3, SpO2: 99.9%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:00.759767,Neutral,Fear,"HR: 75.2, SpO2: 99.7%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:04.001045,Neutral,Fear,"HR: 75.1, SpO2: 99.8%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:07.242727,Neutral,Fear,"HR: 74.4, SpO2: 99.5%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:10.527187,Neutral,Fear,"HR: 72.6, SpO2: 99.7%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:13.803986,Neutral,Fear,"HR: 71.5, SpO2: 99.9%",40,You seem a bit worried. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:17.099140,Neutral,Fear,"HR: 72.0, SpO2: 99.3%",40,You seem a little anxious. Is there anything on your mind that you'd like to share?,So tell me more about you.
+2026-05-02T02:27:20.406225,Neutral,Fear,"HR: 71.1, SpO2: 99.2%",40,You seem a little anxious. Is there anything on your mind that you'd like to share?,So tell me more about you.
+2026-05-02T02:27:23.652466,Neutral,Fear,"HR: 72.9, SpO2: 99.0%",40,You seem a bit overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:26.899035,Neutral,Fear,"HR: 70.5, SpO2: 99.4%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:30.176198,Neutral,Fear,"HR: 73.1, SpO2: 99.5%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:33.452363,Angry,Fear,"HR: 72.0, SpO2: 99.4%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:36.452579,Angry,Fear,"HR: 72.0, SpO2: 99.4%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:39.728550,Sad,Fear,"HR: 71.2, SpO2: 100.0%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:43.004597,Sad,Fear,"HR: 72.7, SpO2: 99.9%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:46.283144,Neutral,Fear,"HR: 72.6, SpO2: 100.0%",40,You seem a little overwhelmed. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:27:49.592192,Neutral,Fear,"HR: 71.1, SpO2: 99.6%",40,You seem a bit anxious. Is there anything specific on your mind that you'd like to share?,So tell me more about you.
+2026-05-02T02:27:52.863355,Sad,Fear,"HR: 70.9, SpO2: 98.8%",40,You seem a little lost. How are you doing today?,So tell me more about you.
+2026-05-02T02:27:56.106296,Neutral,Fear,"HR: 70.9, SpO2: 99.0%",40,You seem a little lost. How are you doing today?,So tell me more about you.
+2026-05-02T02:27:59.371110,Neutral,Fear,"HR: 69.2, SpO2: 99.0%",25,You seem a little lost. How are you doing today?,So tell me more about you.
+2026-05-02T02:28:02.618763,Neutral,Fear,"HR: 69.6, SpO2: 99.0%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:05.921383,Neutral,Fear,"HR: 68.4, SpO2: 98.7%",40,I notice you seem a bit withdrawn. Anything on your mind that you'd like to share?,So tell me more about you.
+2026-05-02T02:28:09.203562,Neutral,Fear,"HR: 69.2, SpO2: 99.3%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:12.449246,Neutral,Fear,"HR: 70.4, SpO2: 99.2%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:15.685812,Neutral,Fear,"HR: 72.1, SpO2: 99.0%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:18.949583,Neutral,Fear,"HR: 72.3, SpO2: 99.0%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:22.187552,Neutral,Fear,"HR: 74.5, SpO2: 99.1%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:25.424727,Neutral,Fear,"HR: 74.0, SpO2: 98.9%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:28.692781,Neutral,Fear,"HR: 74.7, SpO2: 98.9%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:31.963339,Neutral,Fear,"HR: 75.1, SpO2: 99.2%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:35.206268,Neutral,Fear,"HR: 76.5, SpO2: 99.4%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:38.483701,Neutral,Fear,"HR: 76.3, SpO2: 99.2%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:41.754433,Neutral,Fear,"HR: 74.3, SpO2: 99.4%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:45.022268,Neutral,Fear,"HR: 74.4, SpO2: 99.2%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:48.254907,Neutral,Fear,"HR: 73.9, SpO2: 98.7%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:51.522604,Neutral,Fear,"HR: 74.4, SpO2: 98.7%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:54.786471,Neutral,Fear,"HR: 72.3, SpO2: 98.6%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:28:58.027795,Neutral,Fear,"HR: 73.0, SpO2: 98.3%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:01.277622,Neutral,Fear,"HR: 73.4, SpO2: 98.4%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:04.562184,Neutral,Fear,"HR: 74.5, SpO2: 98.4%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:07.810494,Neutral,Fear,"HR: 71.3, SpO2: 98.4%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:11.051417,Neutral,Fear,"HR: 72.0, SpO2: 98.6%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:14.292687,Neutral,Fear,"HR: 72.5, SpO2: 98.6%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:17.541434,Neutral,Fear,"HR: 72.5, SpO2: 98.0%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:20.818490,Neutral,Fear,"HR: 70.5, SpO2: 98.1%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:24.062419,Neutral,Fear,"HR: 72.5, SpO2: 97.8%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:27.306839,Neutral,Fear,"HR: 71.7, SpO2: 98.0%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:30.557185,Neutral,Fear,"HR: 70.1, SpO2: 97.9%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:33.840329,Neutral,Fear,"HR: 69.3, SpO2: 97.6%",25,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:37.090564,Neutral,Fear,"HR: 70.3, SpO2: 97.9%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:40.391204,Neutral,Fear,"HR: 70.7, SpO2: 97.8%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:43.642649,Neutral,Fear,"HR: 72.1, SpO2: 98.0%",21,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:46.892249,Neutral,Fear,"HR: 72.8, SpO2: 97.7%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:50.132936,Neutral,Fear,"HR: 72.1, SpO2: 97.9%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:53.380901,Neutral,Fear,"HR: 70.3, SpO2: 97.7%",40,You seem a little off. How are you feeling right now?,So tell me more about you.
+2026-05-02T02:29:56.627945,Neutral,Fear,"HR: 70.4, SpO2: 97.9%",40,I notice you're quiet. How are you doing today?,So tell me more about you.
+2026-05-02T02:29:59.960722,Neutral,Fear,"HR: 72.6, SpO2: 98.2%",40,I see you're feeling a bit quiet. Anything on your mind that you'd like to share?,So tell me more about you.
+2026-05-02T02:30:03.271393,Neutral,Fear,"HR: 72.2, SpO2: 97.9%",40,You seem a little worried. Is there anything specific causing that feeling right now?,So tell me more about you.
+2026-05-02T02:30:06.541037,Neutral,Fear,"HR: 70.5, SpO2: 97.7%",40,You seem a little worried. Is there anything specific causing that feeling right now?,So tell me more about you.
+2026-05-02T02:30:09.856244,Neutral,Fear,"HR: 70.1, SpO2: 97.6%",40,You seem a little worried. Is there anything specific causing that feeling right now?,So tell me more about you.

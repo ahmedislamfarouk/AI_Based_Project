@@ -1,0 +1,22 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T03:10:57.907719,Starting...,Starting...,0,Initializing...,
+2026-05-02T03:11:00.908000,Angry,Starting...,0,Initializing...,
+2026-05-02T03:11:34.702152,Sad,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:37.702408,Neutral,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:40.702659,Fear,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:43.702910,Angry,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:46.703145,Angry,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:49.703399,Angry,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,"Hi, how are you today?"
+2026-05-02T03:11:52.703600,Angry,Fear,60,It sounds like you're carrying a lot right now. I'm here to listen if you'd like to share what's on your mind. What's been bringing you in today?,
+2026-05-02T03:12:19.329234,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:22.329508,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:25.329855,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:28.330132,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:31.330501,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:34.330945,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:37.331492,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:40.331879,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:43.332375,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:46.332739,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:49.333107,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?
+2026-05-02T03:12:52.333607,Angry,Anger,60,"I hear you're feeling angry. It takes courage to express that, and I'm here for you. What's making you feel this way?",How are you today?

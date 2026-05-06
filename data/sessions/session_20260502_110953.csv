@@ -1,0 +1,4 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T11:10:48.754471,Neutral,Disgust,45,"It sounds incredibly frustrating to feel like you've built something and then find yourself dissatisfied with it. It takes courage to acknowledge that feeling, and it's okay to feel conflicted when something you invested in doesn't fully meet your needs.","Hey man, I'm not actually feeling sad, but you know the great area, I feel I'm stuck on it.  Like I spent a lot of time building my own path, but I'm here like, you know, I feel I, I hate it."
+2026-05-02T11:11:19.061975,Neutral,Fear,75,Hi Dr. Laila!,"Okay, this conversation will be here by Dr. Laila, so can you say hi to Dr. Laila?"
+2026-05-02T11:12:18.063542,Neutral,Sad,30,Hi Dr. Laila!,You

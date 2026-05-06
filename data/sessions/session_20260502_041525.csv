@@ -1,0 +1,5 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T04:15:48.701481,Sad,Calm,21,"It's kind of you to ask. I'm doing okay, thank you for checking in. Is there anything you'd like to talk about?","Hi, how are you today?"
+2026-05-02T04:17:33.687926,Angry,Surprised,60,That's a really unexpected question to ask. It takes courage to ask something like that. How are you feeling right now? Perhaps we can explore that a little more?,Are you gay?
+2026-05-02T04:18:02.278215,Angry,Fear,60,"That's a very difficult question to receive, especially given the way it was asked. It sounds like you're feeling really anxious and perhaps a little defensive right now. Would you like to talk about what's going on?",Are you gay or not?
+2026-05-02T04:18:44.469706,Angry,Sad,60,"That's a really intense question to ask, and it sounds like you're feeling a lot of frustration. It's okay to feel however you're feeling. What's behind that anger?",Can I say fuck you freely?

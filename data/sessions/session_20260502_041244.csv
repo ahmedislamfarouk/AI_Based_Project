@@ -1,0 +1,3 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T04:13:25.226545,Sad,Calm,21,"It's kind of you to ask. I'm doing alright, thanks for checking in. How are *you* feeling today?","Hi, how are you?"
+2026-05-02T04:14:17.810691,Neutral,Happy,60,That's a really heavy question. It takes courage to ask something like that. What's going through your mind when you ask that?,Are you leaving alive?

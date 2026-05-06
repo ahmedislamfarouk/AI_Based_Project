@@ -1,0 +1,5 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T04:31:34.427393,Angry,Calm,40,It's understandable to feel that way. What's been on your mind lately?,"Hi, how are you?"
+2026-05-02T04:31:42.483766,Angry,Calm,60,It takes courage to reach out. What's making you feel angry right now?,"Hi, how are you?"
+2026-05-02T04:31:54.098296,Angry,Happy,60,I'm glad you reached out. It sounds like you're carrying a lot. What feels most difficult about this right now?,Hello.  How are you?
+2026-05-02T04:32:16.356432,Idle,Fear,40,It's understandable to feel a little apprehensive sometimes. What's on your mind?,Hoi!

@@ -1,0 +1,10 @@
+timestamp,video_emotion,voice_emotion,biometric_data,distress_level,llm_response,stt_text
+2026-05-02T00:36:14.479720,Starting...,Starting...,"HR: 75.6, SpO2: 97.0%",50,I'm here with you.,
+2026-05-02T00:36:17.482187,Starting...,Starting...,"HR: 74.6, SpO2: 97.0%",50,I'm here with you.,
+2026-05-02T00:36:20.484885,Starting...,Starting...,"HR: 74.1, SpO2: 97.4%",50,I'm here with you.,
+2026-05-02T00:36:23.487902,Starting...,Starting...,"HR: 74.9, SpO2: 97.2%",50,I'm here with you.,
+2026-05-02T00:36:26.490566,Starting...,Starting...,"HR: 75.1, SpO2: 97.4%",50,I'm here with you.,
+2026-05-02T00:36:29.494714,Starting...,Starting...,"HR: 75.5, SpO2: 97.1%",50,I'm here with you.,
+2026-05-02T00:36:32.497727,Starting...,Starting...,"HR: 77.0, SpO2: 97.2%",50,I'm here with you.,
+2026-05-02T00:36:35.500228,Starting...,Starting...,"HR: 76.7, SpO2: 97.4%",50,I'm here with you.,
+2026-05-02T00:36:38.502500,Starting...,Starting...,"HR: 75.4, SpO2: 97.3%",50,I'm here with you.,

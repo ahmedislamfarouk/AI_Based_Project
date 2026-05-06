@@ -3,8 +3,15 @@ import time
 import threading
 from collections import deque
 
+try:
+    import webrtcvad
+    _HAS_WEBRTC_VAD = True
+except ImportError:
+    _HAS_WEBRTC_VAD = False
+
 from modules.voice.ser_model import SERInference, NUM_SAMPLES
 from modules.voice.stt_engine import STTEngine
+
 
 class VoiceEmotionAnalyzer:
     def __init__(self, rate=16000, chunk=1024):
@@ -23,12 +30,36 @@ class VoiceEmotionAnalyzer:
         self.browser_audio_pos = 0
         self.browser_audio_written = 0
 
-        self.speech_buffer = []
+        # ── Segmentation state ──
+        self.speech_segment = []
         self.is_speaking = False
-        self.silence_chunks = 0
-        self.speech_chunks = 0
-        self.energy_history = deque(maxlen=50)
-        self.energy_threshold = 300.0
+        self.silence_frames = 0
+        self.speech_frames = 0
+        self.segment_start_time = 0.0
+
+        # ── WebRTC VAD ──
+        self._vad = None
+        self.vad_mode = 2
+        if _HAS_WEBRTC_VAD:
+            try:
+                self._vad = webrtcvad.Vad(self.vad_mode)
+            except Exception:
+                self._vad = None
+        self._vad_frame_ms = 30
+        self._vad_frame_samples = int(rate * self._vad_frame_ms / 1000)
+        self._vad_residual = b''
+
+        # Thresholds (tunable)
+        self.speech_onset_frames = 3
+        self.silence_timeout_frames = 8
+        self.max_segment_sec = 10.0
+        self.min_segment_sec = 0.5
+
+        # ── SER throttling ──
+        self.last_speech_time = 0.0
+        self.last_ser_time = 0.0
+        self.ser_cooldown = 2.0
+        self.speech_idle_timeout = 3.0
 
         self.latest_transcript = ""
         self.latest_emotion = "Idle"
@@ -52,7 +83,7 @@ class VoiceEmotionAnalyzer:
                                       input=True,
                                       frames_per_buffer=self.chunk)
             self.audio_available = True
-            print("[Voice] Audio device initialized successfully")
+            print(f"[Voice] Audio device initialized (VAD={'webrtc' if self._vad else 'fallback-energy'})")
             self._running = True
             self._capture_thread = threading.Thread(target=self._audio_capture_loop, daemon=True)
             self._capture_thread.start()
@@ -60,24 +91,94 @@ class VoiceEmotionAnalyzer:
             self._stt_thread.start()
         except Exception as e:
             print(f"[Voice] Audio device not available: {e}")
-            print("[Voice] Running in browser-audio mode. Send audio via /api/browser-audio.")
+            print("[Voice] Running in browser-audio mode.")
             self.audio_available = False
             self._running = True
             self._stt_thread = threading.Thread(target=self._stt_loop, daemon=True)
             self._stt_thread.start()
 
+    # ── helpers ──────────────────────────────────────────────────────────
+
+    def _float32_to_int16(self, arr):
+        arr = np.clip(arr, -1.0, 1.0)
+        return (arr * 32767).astype(np.int16)
+
+    def _int16_bytes(self, arr_f32):
+        return self._float32_to_int16(arr_f32).tobytes()
+
+    def _vad_on_chunk(self, audio_f32):
+        if self._vad is None:
+            return self._energy_vad(audio_f32)
+        int16_bytes = self._int16_bytes(audio_f32)
+        self._vad_residual += int16_bytes
+        frame_len = self._vad_frame_samples * 2
+        speech = False
+        while len(self._vad_residual) >= frame_len:
+            frame = self._vad_residual[:frame_len]
+            self._vad_residual = self._vad_residual[frame_len:]
+            try:
+                if self._vad.is_speech(frame, self.rate):
+                    speech = True
+            except Exception:
+                pass
+        return speech
+
+    def _energy_vad(self, audio_chunk):
+        rms = np.sqrt(np.mean(audio_chunk ** 2))
+        if not hasattr(self, '_energy_history'):
+            self._energy_history = deque(maxlen=50)
+            self._energy_threshold = 300.0
+        self._energy_history.append(rms)
+        if len(self._energy_history) >= 20:
+            mean_e = np.mean(self._energy_history)
+            std_e = np.std(self._energy_history) if np.std(self._energy_history) > 0 else 50
+            self._energy_threshold = np.clip(mean_e + 2.5 * std_e, 200.0, 2000.0)
+        return rms > self._energy_threshold
+
+    def _update_segmentation(self, is_speech, now):
+        if is_speech:
+            self.speech_frames += 1
+            self.silence_frames = 0
+            self.last_speech_time = now
+            if not self.is_speaking and self.speech_frames >= self.speech_onset_frames:
+                self.is_speaking = True
+                self.segment_start_time = now
+                self.speech_segment = []
+        else:
+            self.silence_frames += 1
+            self.speech_frames = max(0, self.speech_frames - 1)
+            if self.is_speaking and self.silence_frames >= self.silence_timeout_frames:
+                self._finalize_segment()
+
+        if self.is_speaking:
+            total_samples = sum(len(c) for c in self.speech_segment)
+            elapsed = now - self.segment_start_time
+            if elapsed >= self.max_segment_sec:
+                self._finalize_segment()
+
+    def _finalize_segment(self):
+        if not self.speech_segment:
+            self.is_speaking = False
+            return
+        segment = np.concatenate(self.speech_segment)
+        self.speech_segment = []
+        self.is_speaking = False
+        dur = len(segment) / self.rate
+        if dur < self.min_segment_sec:
+            return
+        text = self.stt.transcribe(segment, sr=self.rate)
+        if text:
+            with self.transcript_lock:
+                self.latest_transcript = text
+            print(f"[STT] {text}")
+
+    # ── mic capture ──────────────────────────────────────────────────────
+
     def _audio_capture_loop(self):
         while self._running:
             try:
                 data = self.stream.read(self.chunk, exception_on_overflow=False)
-                audio_chunk = np.frombuffer(data, dtype=np.int16).astype(np.float32)
-
-                rms = np.sqrt(np.mean(audio_chunk ** 2))
-                self.energy_history.append(rms)
-                if len(self.energy_history) >= 20:
-                    mean_e = np.mean(self.energy_history)
-                    std_e = np.std(self.energy_history) if np.std(self.energy_history) > 0 else 50
-                    self.energy_threshold = np.clip(mean_e + 2.5 * std_e, 200.0, 2000.0)
+                audio_chunk = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
 
                 with self.buffer_lock:
                     n = len(audio_chunk)
@@ -90,29 +191,18 @@ class VoiceEmotionAnalyzer:
                         self.audio_buffer[self.buffer_pos:self.buffer_pos + n] = audio_chunk
                         self.buffer_pos += n
 
-                if rms > self.energy_threshold:
-                    self.speech_chunks += 1
-                    self.silence_chunks = 0
-                    if not self.is_speaking and self.speech_chunks > 5:
-                        self.is_speaking = True
-                        self.speech_buffer = []
-                else:
-                    self.silence_chunks += 1
-                    if self.is_speaking and self.silence_chunks > 20:
-                        self.is_speaking = False
-                        self._process_speech_segment()
-                    self.speech_chunks = max(0, self.speech_chunks - 1)
+                now = time.time()
+                is_speech = self._vad_on_chunk(audio_chunk)
+                self._update_segmentation(is_speech, now)
 
                 if self.is_speaking:
-                    self.speech_buffer.append(audio_chunk.copy())
-                    total_speech_samples = sum(len(c) for c in self.speech_buffer)
-                    if total_speech_samples > self.rate * 15:
-                        self.is_speaking = False
-                        self._process_speech_segment()
+                    self.speech_segment.append(audio_chunk.copy())
 
             except Exception as e:
                 print(f"[Voice] Capture error: {e}")
                 time.sleep(0.1)
+
+    # ── browser audio ────────────────────────────────────────────────────
 
     def feed_browser_audio(self, audio_np):
         if audio_np is None or len(audio_np) == 0:
@@ -129,22 +219,19 @@ class VoiceEmotionAnalyzer:
                 self.browser_audio_pos += n
             self.browser_audio_written += n
 
-    def _process_speech_segment(self):
-        if not self.speech_buffer:
-            return
-        segment = np.concatenate(self.speech_buffer)
-        self.speech_buffer = []
-        if len(segment) < self.rate * 0.5:
-            return
-        text = self.stt.transcribe(segment, sr=self.rate)
-        if text:
-            with self.transcript_lock:
-                self.latest_transcript = text
-            print(f"[STT] {text}")
+        now = time.time()
+        is_speech = self._vad_on_chunk(audio_np)
+        self._update_segmentation(is_speech, now)
+        if self.is_speaking:
+            self.speech_segment.append(audio_np.copy())
+
+    # ── STT background loop ──────────────────────────────────────────────
 
     def _stt_loop(self):
         while self._running:
             time.sleep(2.0)
+
+    # ── audio segment for SER ────────────────────────────────────────────
 
     def _get_audio_segment(self):
         src = "mic"
@@ -171,7 +258,17 @@ class VoiceEmotionAnalyzer:
                     src = "browser"
         return segment, src
 
+    # ── SER analysis (throttled) ─────────────────────────────────────────
+
     def analyze_audio(self):
+        now = time.time()
+
+        if now - self.last_speech_time > self.speech_idle_timeout:
+            return self.latest_emotion
+
+        if now - self.last_ser_time < self.ser_cooldown:
+            return self.latest_emotion
+
         if self.ser.model is None and self.ser.feature_extractor is None:
             return self.latest_emotion if self.latest_emotion != "Idle" else "Neutral"
 
@@ -179,6 +276,7 @@ class VoiceEmotionAnalyzer:
         if segment is None or len(segment) < NUM_SAMPLES * 0.3:
             return self.latest_emotion
 
+        self.last_ser_time = now
         try:
             result = self.ser.predict(segment, sr=self.rate)
             emotion = result[0] if isinstance(result, tuple) else result

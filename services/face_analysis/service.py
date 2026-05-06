@@ -1,5 +1,4 @@
 import io
-import base64
 import time
 import threading
 from fastapi import FastAPI, UploadFile, File
@@ -48,6 +47,11 @@ angry_prob_history = defaultdict(lambda: deque(maxlen=ANGRY_SMOOTH_WINDOW))
 face_mesh_instance = None
 face_mesh_lock = threading.Lock()
 _haar_cascade = None
+
+# Simple emotion cache for faster repeated analysis
+_emotion_cache = {}
+_cache_lock = threading.Lock()
+_cache_ttl = 0.25  # seconds
 
 
 def get_haar_cascade():
@@ -155,6 +159,28 @@ def analyze_frame_deepface(face_crop):
             return "Neutral", {}
 
 
+def _get_cached_emotion(face_crop):
+    if face_crop is None or face_crop.size == 0:
+        return None
+    # Use a simple hash based on average pixel values
+    small = cv2.resize(face_crop, (8, 8))
+    key = hash(small.tobytes())
+    with _cache_lock:
+        entry = _emotion_cache.get(key)
+        if entry and (time.time() - entry["time"]) < _cache_ttl:
+            return entry["emotion"], entry["raw_probs"]
+    return None
+
+
+def _set_cached_emotion(face_crop, emotion, raw_probs):
+    if face_crop is None or face_crop.size == 0:
+        return
+    small = cv2.resize(face_crop, (8, 8))
+    key = hash(small.tobytes())
+    with _cache_lock:
+        _emotion_cache[key] = {"emotion": emotion, "raw_probs": raw_probs, "time": time.time()}
+
+
 def analyze_with_mediapipe(frame, face_mesh):
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = face_mesh.process(rgb)
@@ -175,25 +201,19 @@ def analyze_with_mediapipe(frame, face_mesh):
         y_max_c = min(y_max + margin, h)
         face_crop = frame[y_min_c:y_max_c, x_min_c:x_max_c]
         emotion, raw_probs = analyze_frame_deepface(face_crop)
+
+        # Smooth emotion via simple majority over last 5 frames
+        emotion_history[face_idx].append(emotion)
+        if len(emotion_history[face_idx]) >= 3:
+            emotion = Counter(emotion_history[face_idx]).most_common(1)[0][0]
         leftEye = landmarks[LEFT_EYE_IDX]
         rightEye = landmarks[RIGHT_EYE_IDX]
         leftEAR = eye_aspect_ratio(leftEye)
         rightEAR = eye_aspect_ratio(rightEye)
         ear = (leftEAR + rightEAR) / 2.0
         mar = mouth_aspect_ratio_mediapipe(landmarks)
-        if emotion == "Fear":
-            if mar < 0.5 and ear < 0.3:
-                emotion = "Neutral"
-        if raw_probs:
-            if is_angry_by_probability(face_idx, raw_probs):
-                emotion = "Angry"
-            elif emotion == "Angry":
-                emotion = "Neutral"
-        if emotion == "Surprise":
-            if ear < 0.22 or mar < 0.32:
-                emotion = "Neutral"
-        if (ear > 0.28 and mar > 0.5) and emotion in ["Fear", "Neutral"]:
-            emotion = "Surprise"
+
+        # Drowsiness / yawning / nodding detection
         drowsy = False
         EYES_CLOSED_FRAMES = 50
         eyes_closed_long = blink_counter[face_idx] >= EYES_CLOSED_FRAMES
@@ -233,13 +253,7 @@ def analyze_with_mediapipe(frame, face_mesh):
         center_y = (center_top_y + center_bottom_y) / 2
         if left_corner_y > center_y and right_corner_y > center_y:
             emotion = "Sad"
-        emotion_history[face_idx].append(emotion)
-        fear_count = sum([e == "Fear" for e in emotion_history[face_idx]])
-        if fear_count < 0.4 * len(emotion_history[face_idx]):
-            most_common_emotion = Counter(emotion_history[face_idx]).most_common(1)[0][0]
-            display_emotion = most_common_emotion
-        else:
-            display_emotion = "Fear"
+        display_emotion = emotion
         color = (0, 0, 255) if display_emotion == "Angry" else (0, 255, 0)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), color, 2)
         cv2.putText(frame, f"Emotion: {display_emotion}", (x_min, y_min - 10),
@@ -255,9 +269,6 @@ def analyze_with_mediapipe(frame, face_mesh):
         all_results.append({
             "emotion": display_emotion,
             "state": state,
-            "ear": float(ear),
-            "mar": float(mar),
-            "raw_probs": {k: float(v) for k, v in raw_probs.items()} if raw_probs else {}
         })
     return frame, all_results
 
@@ -277,7 +288,12 @@ def analyze_with_haar(frame):
     face_crop = frame[y1:y2, x1:x2]
     if (w / frame.shape[1]) < 0.05:
         return frame, []
-    emotion, raw_probs = analyze_frame_deepface(face_crop)
+    cached = _get_cached_emotion(face_crop)
+    if cached:
+        emotion, raw_probs = cached
+    else:
+        emotion, raw_probs = analyze_frame_deepface(face_crop)
+        _set_cached_emotion(face_crop, emotion, raw_probs)
     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     cv2.putText(frame, emotion, (x, y - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -323,11 +339,9 @@ async def analyze(frame: UploadFile = File(...)):
         try:
             annotated, results = analyze_with_mediapipe(img, _mesh)
             if results:
-                _, img_encoded = cv2.imencode('.jpg', annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
                 return {
                     "method": "mediapipe+deepface",
                     "faces": results,
-                    "annotated_frame_b64": base64.b64encode(img_encoded).decode('utf-8')
                 }
             else:
                 print("[FaceService] MediaPipe found no faces, falling through to Haar")
@@ -336,11 +350,9 @@ async def analyze(frame: UploadFile = File(...)):
             _mesh = None
 
     annotated, results = analyze_with_haar(img)
-    _, img_encoded = cv2.imencode('.jpg', annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
     return {
         "method": "haar+deepface",
         "faces": results,
-        "annotated_frame_b64": base64.b64encode(img_encoded).decode('utf-8')
     }
 
 

@@ -1,0 +1,5 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T05:36:29.147840,Angry,Fear,75,"It sounds like you're carrying a lot right now. I'm here to listen without judgment, and I want to support you in whatever way feels helpful.","Hi, how are you?"
+2026-05-02T05:37:20.155441,Sad,Sad,85,That sounds incredibly painful. It's completely understandable to feel sad and hurt after something like that. It takes a lot of strength to share that with me.,"Yes, my girlfriend just cheated on me. Her name is Zara, he denies away. She is a cheater pro."
+2026-05-02T05:37:40.149272,Sad,Disgust,75,Hi Laila!,Can you say high doctor Laila?
+2026-05-02T05:38:03.691908,Sad,Anger,75,It's okay to feel angry right now. That's a natural response to betrayal. What's going through your mind as you feel that anger?,Uh-huh.

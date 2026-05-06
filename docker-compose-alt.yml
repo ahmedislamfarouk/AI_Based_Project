@@ -1,0 +1,86 @@
+services:
+  face-analysis-v2:
+    image: ai_based_project-face-analysis:latest
+    container_name: face-analysis-v2
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=
+      - CUDA_VISIBLE_DEVICES=-1
+    expose:
+      - "8004"
+    restart: unless-stopped
+    networks:
+      - alt-net
+
+  voice-analysis-v2:
+    image: ai_based_project-voice-analysis:latest
+    container_name: voice-analysis-v2
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+    expose:
+      - "8005"
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - alt-net
+
+  fusion-llm-v2:
+    image: ai_based_project-fusion-llm:latest
+    container_name: fusion-llm-v2
+    env_file:
+      - .env
+    environment:
+      - LLM_MODE=local
+      - LLM_GPU_DEVICES=0,1
+      - LLM_THREADS_PER_GPU=5
+      - LLM_MODEL_PATH=LLM/model/therapist-gemma-q4_K_M.gguf
+      - NVIDIA_VISIBLE_DEVICES=3,4
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - TTS_BACKEND=${TTS_BACKEND:-qwen}
+      - QWEN_TTS_MODEL=Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+      - QWEN_TTS_SPEAKER=Ryan
+      - QWEN_TTS_LANGUAGE=English
+      - QWEN_TTS_DEVICE=cuda:0
+      - GEMINI_TTS_MODEL=${GEMINI_TTS_MODEL:-gemini-3.1-flash-tts-preview}
+    volumes:
+      - ./LLM/model:/app/LLM/model
+      - /root/.cache/huggingface:/root/.cache/huggingface
+    expose:
+      - "8006"
+    runtime: nvidia
+    restart: unless-stopped
+    networks:
+      - alt-net
+
+  web-api-v2:
+    image: ai_based_project-web-api:latest
+    container_name: web-api-v2
+    environment:
+      - FACE_SERVICE_URL=http://face-analysis-v2:8004
+      - VOICE_SERVICE_URL=http://voice-analysis-v2:8005
+      - FUSION_SERVICE_URL=http://fusion-llm-v2:8006
+      - CAMERA_SOURCE=browser
+      - TTS_DISTRESS_THRESHOLD=0
+    ports:
+      - "8011:8010"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      face-analysis-v2:
+        condition: service_started
+      voice-analysis-v2:
+        condition: service_started
+      fusion-llm-v2:
+        condition: service_started
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    networks:
+      - alt-net
+
+networks:
+  alt-net:
+    driver: bridge

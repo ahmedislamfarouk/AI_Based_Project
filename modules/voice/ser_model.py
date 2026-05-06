@@ -14,8 +14,11 @@ NUM_SAMPLES = int(SAMPLE_RATE * CREMA_D_DURATION)
 class WavLMHubertFusionModel(nn.Module):
     def __init__(self, num_classes, num_finetune_layers=11, dropout=0.3):
         super().__init__()
-        self.wavlm = WavLMModel.from_pretrained("microsoft/wavlm-base-plus")
-        self.hubert = HubertModel.from_pretrained("facebook/hubert-base-ls960")
+        try:
+            self.wavlm = WavLMModel.from_pretrained("microsoft/wavlm-base-plus")
+            self.hubert = HubertModel.from_pretrained("facebook/hubert-base-ls960")
+        except Exception as e:
+            raise RuntimeError(f"Failed to load WavLM/HuBERT base models: {e}")
         self.num_finetune_layers = num_finetune_layers
         self.dropout = dropout
 
@@ -123,7 +126,10 @@ class SERInference:
             model_config = checkpoint['model_config']
             self.label_classes = checkpoint['label_encoder_classes']
 
-            self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("microsoft/wavlm-base-plus")
+            self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
+                "microsoft/wavlm-base-plus",
+                local_files_only=False,
+            )
 
             self.model = WavLMHubertFusionModel(
                 num_classes=model_config['num_classes'],

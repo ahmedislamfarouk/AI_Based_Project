@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     gcc g++ make cmake ninja-build pkg-config git \
     libegl1 libegl-mesa0 libglvnd0 libgl1-mesa-glx \
     libgles2-mesa libgomp1 libopengl0 \
+    cuda-compiler-12-2 cuda-cudart-dev-12-2 cuda-driver-dev-12-2 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
@@ -29,6 +30,15 @@ RUN python -m pip install \
         --index-url https://download.pytorch.org/whl/cu121
 
 RUN python -m pip install --no-cache-dir --prefer-binary -r requirements.txt
+
+# Install flash-attn (needs nvcc from cuda-compiler installed above)
+# MAX_JOBS=4 limits parallel build to avoid OOM during compilation
+RUN MAX_JOBS=4 python -m pip install --no-cache-dir flash-attn --no-build-isolation
+
+# Install pre-built CUDA wheel for llama-cpp-python (CUDA 12.2)
+# Use --no-deps to skip dependency resolution (deps already satisfied from base install)
+RUN python -m pip install --no-cache-dir --force-reinstall --no-deps llama-cpp-python==0.3.21 \
+    --index-url https://abetlen.github.io/llama-cpp-python/whl/cu122
 
 RUN python -m pip install --no-cache-dir --prefer-binary safetensors
 

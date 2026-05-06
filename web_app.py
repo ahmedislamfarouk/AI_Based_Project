@@ -31,12 +31,13 @@ from modules.output.session_logger import SessionLogger
 from modules.video.video_processor import VideoSessionProcessor
 
 try:
-    from EmotionDetection import analyze_faces_and_draw, get_face_mesh
+    from EmotionDetection import analyze_faces_and_draw, get_face_mesh, draw_face_mesh_fast
     REAL_MODEL_AVAILABLE = True
     print("[Startup] Advanced emotion model (DeepFace) available.")
 except Exception as e:
     print(f"[Startup] Advanced emotion model unavailable: {e}")
     REAL_MODEL_AVAILABLE = False
+    draw_face_mesh_fast = None
 
 app = FastAPI(title="Multimodal Emotion Monitor", version="2.0")
 
@@ -101,7 +102,8 @@ running = False
 current_logger = None
 
 latest_raw_frame = None
-latest_display_frame = None
+last_mjpeg_bytes = None
+raw_frame_version = 0
 
 state_lock = threading.Lock()
 frame_lock = threading.Lock()
@@ -112,7 +114,11 @@ CAMERA_ID = int(os.getenv("CAMERA_ID", "0"))
 cap = None
 if CAMERA_SOURCE == "device":
     cap = cv2.VideoCapture(CAMERA_ID)
-    if not cap.isOpened():
+    if cap.isOpened():
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FPS, 15)
+    else:
         print(f"[Startup] Warning: Camera index {CAMERA_ID} not available.")
         cap = None
 else:
@@ -175,7 +181,7 @@ def frame_reader():
                 frame = cv2.flip(frame, 1)
                 with frame_lock:
                     latest_raw_frame = frame
-        time.sleep(0.033)
+        time.sleep(0.066)
 
 
 def video_worker():
@@ -193,53 +199,7 @@ def video_worker():
         else:
             with state_lock:
                 system_state["video_emotion"] = "No Frame"
-        time.sleep(0.5)
-
-
-def display_worker():
-    global latest_display_frame
-    face_mesh = None
-    if REAL_MODEL_AVAILABLE:
-        try:
-            face_mesh = get_face_mesh()
-            print("[DisplayWorker] FaceMesh initialized for fast display overlay.")
-        except Exception as e:
-            print(f"[DisplayWorker] Failed to init FaceMesh: {e}")
-            face_mesh = None
-
-    while True:
-        if not running:
-            time.sleep(0.1)
-            continue
-
-        with frame_lock:
-            frame = latest_raw_frame.copy() if latest_raw_frame is not None else None
-
-        if frame is not None:
-            annotated = frame.copy()
-            emotion_text = ""
-            with state_lock:
-                emotion_text = system_state.get("video_emotion", "")
-
-            if REAL_MODEL_AVAILABLE and face_mesh is not None:
-                try:
-                    from EmotionDetection import draw_face_mesh_fast
-                    annotated = draw_face_mesh_fast(annotated, face_mesh, emotion_text)
-                except Exception:
-                    try:
-                        annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
-                    except Exception:
-                        pass
-            else:
-                try:
-                    annotated, _ = detect_and_annotate(annotated, emotion_text=emotion_text)
-                except Exception:
-                    pass
-
-            with frame_lock:
-                latest_display_frame = annotated
-
-        time.sleep(0.033)
+        time.sleep(1.0)
 
 
 def voice_worker():
@@ -254,7 +214,7 @@ def voice_worker():
                 system_state["voice_emotion"] = emotion
         except Exception as e:
             print(f"[VoiceWorker] Error: {e}")
-        time.sleep(0.5)
+        time.sleep(1.0)
 
 
 def biometric_worker():
@@ -327,6 +287,8 @@ def ai_fusion_worker():
 
             if response and distress >= tts_distress_threshold and (response_changed or repeat_due):
                 with state_lock:
+                    if system_state["tts_generating"]:
+                        continue
                     system_state["tts_generating"] = True
                     system_state["tts_audio_url"] = None
                     system_state["tts_audio_b64"] = None
@@ -343,10 +305,10 @@ def ai_fusion_worker():
             print(f"[AI Fusion] Error: {e}")
             import traceback
             traceback.print_exc()
-        time.sleep(3)
+        time.sleep(5)
 
 
-for target in [frame_reader, display_worker, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
+for target in [frame_reader, video_worker, voice_worker, biometric_worker, ai_fusion_worker]:
     threading.Thread(target=target, daemon=True).start()
 
 
@@ -534,7 +496,9 @@ async def ingest_browser_frame(frame: UploadFile = File(...)):
 
     decoded = cv2.flip(decoded, 1)
     with frame_lock:
+        global raw_frame_version
         latest_raw_frame = decoded
+        raw_frame_version += 1
     return {"status": "ok"}
 
 
@@ -656,16 +620,47 @@ def get_history():
         return SafeJSONResponse(content={"error": str(e)})
 
 
+def _annotate_frame(frame, emotion_text=""):
+    if draw_face_mesh_fast:
+        try:
+            fm = get_face_mesh()
+            if fm:
+                return draw_face_mesh_fast(frame, fm, emotion_text)
+        except Exception:
+            pass
+    try:
+        annotated, _ = detect_and_annotate(frame, emotion_text=emotion_text)
+        return annotated
+    except Exception:
+        pass
+    return frame
+
+
 def generate_mjpeg():
+    global last_mjpeg_bytes
+    _last_version = -1
     while True:
         with frame_lock:
-            frame = latest_display_frame if latest_display_frame is not None else latest_raw_frame
-        if frame is not None:
-            ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
+            raw = latest_raw_frame
+            ver = raw_frame_version
+        if raw is None:
+            time.sleep(0.1)
+            continue
+
+        if ver != _last_version or last_mjpeg_bytes is None:
+            _last_version = ver
+            emotion_text = ""
+            with state_lock:
+                emotion_text = system_state.get("video_emotion", "")
+            annotated = _annotate_frame(raw.copy(), emotion_text)
+            ret, buf = cv2.imencode('.jpg', annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 65])
             if ret:
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-        time.sleep(0.033)
+                last_mjpeg_bytes = buf.tobytes()
+
+        if last_mjpeg_bytes:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + last_mjpeg_bytes + b'\r\n')
+        time.sleep(0.1)
 
 
 @app.get("/video_feed")

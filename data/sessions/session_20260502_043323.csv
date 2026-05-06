@@ -1,0 +1,3 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T04:33:44.250867,Fear,Fear,70,It's understandable to feel anxious when you're testing things. How are you feeling right now?,"Hi, can you hear me? This is test test test test"
+2026-05-02T04:34:00.571695,Fear,Fear,40,"It takes courage to reach out, especially when you're unsure. What's going through your mind as you're testing this?",Hi. Can you hear me? This is a test.

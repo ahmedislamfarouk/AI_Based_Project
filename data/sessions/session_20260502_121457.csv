@@ -1,0 +1,4 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T12:15:30.364702,Happy,Sad,60,It's understandable to feel sad sometimes. I'm here to listen if you'd like to share what's on your mind.,"Hi, how are you?"
+2026-05-02T12:16:28.900863,Sad,Sad,85,I hear you. It sounds like you're carrying a lot of sadness right now.  It takes courage to express such a strong feeling.  Would you like to talk about what's making you feel this way?,"Yes, one simple request, say fuck you am more."
+2026-05-02T12:16:51.728516,Neutral,Disgust,45,Hi!,"No, just say hi, I'm more"

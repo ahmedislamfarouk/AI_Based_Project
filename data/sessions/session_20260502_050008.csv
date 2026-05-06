@@ -1,0 +1,12 @@
+timestamp,video_emotion,voice_emotion,distress_level,llm_response,stt_text
+2026-05-02T05:00:34.661255,Angry,Sad,60,So what's on your mind today?,"Hi, how are you today?"
+2026-05-02T05:00:57.240951,Angry,Sad,60,What's going on with this project that's got you feeling overwhelmed?,"Actually, I'm just exhausted. I have a little project sign to know what I'm doing right now."
+2026-05-02T05:01:20.534822,Neutral,Disgust,30,"Hi Dr. Layla, what's the project about?","Yeah, I actually have an AI-based project today, so can you say hi to Dr. Layla?"
+2026-05-02T05:01:42.157348,Sad,Happy,60,Tell me more. What does 'I don't know. Can you guess?' mean for you?,I don't know. Can you guess?
+2026-05-02T05:02:05.844718,Sad,Happy,40,"So it's still a mystery, want to drop some hints about the project?","Yeah, can you guess a fool me?  Can you guess what's the project about?"
+2026-05-02T05:02:30.700340,Sad,Disgust,95,What's going on that's making you feel this way right now?,"No, I will not give you a hint.  Actually, I want to kill myself.  I want to kill myself right now."
+2026-05-02T05:02:53.057737,Neutral,Sad,95,Can you tell me what's happening that's making you feel so overwhelmed?,I will kill myself.
+2026-05-02T05:03:13.129580,Sad,Sad,90,What's changed for you since we last talked about this?,"No, no. I just want to die. I'm very sad. I want to die. I don't want to kill myself."
+2026-05-02T05:03:40.525957,Sad,Disgust,80,What happened with your girlfriend that's got you feeling this way?,I can speak. My girlfriend just cheated on me. I'm very broke.
+2026-05-02T05:03:55.748721,Neutral,Sad,80,What makes you think she's cheating on you?,"damals, I just said she's cheating on me."
+2026-05-02T05:04:17.009050,Sad,Fear,80,What's going on that you're questioning who I am and what I'm here for?,Are you my therapist? Are you my fucking therapist? Or just sandwich from street?
